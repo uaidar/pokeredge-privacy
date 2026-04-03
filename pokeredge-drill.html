@@ -1,0 +1,2669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="theme-color" content="#050f09">
+<title>PokerEdge Drill</title>
+<style>
+/* System font stack - works offline, fast, no network needed */
+</style>
+<style>
+:root{
+  --felt:#0a2e1a;--felt-l:#0f3d22;
+  --gold:#c9a84c;--gold-l:#e8c97a;--gold-dim:rgba(201,168,76,.12);
+  --card:#f5f0e8;--red:#c0392b;--blk:#1a1a1a;
+  --tx:#e8dfc8;--mu:#6a7e6c;
+  --green:#4caf72;--orange:#e8943a;--blue:#4a9eda;--amber:#e8b83a;
+  --bg:#050f09;--sf:rgba(255,255,255,.04);--bd:rgba(255,255,255,.07);
+  --r:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);font-family:-apple-system,'Segoe UI','Helvetica Neue',sans-serif;color:var(--tx);display:flex;flex-direction:column}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(10,46,26,.5) 0%,transparent 70%),repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(255,255,255,.006) 3px,rgba(255,255,255,.006) 6px);z-index:0;pointer-events:none}
+.screen{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;overflow:hidden}
+.screen.hidden{display:none}
+
+/* ── SPLASH ── */
+#splash{background:var(--bg);align-items:center;justify-content:center;padding:24px 28px}
+.splash-inner{width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center}
+.logo-suit{font-size:44px;color:var(--gold);text-shadow:0 0 40px rgba(201,168,76,.5);line-height:1;display:block;text-align:center}
+.logo-title{font-family:'Georgia',serif;font-size:32px;font-weight:900;color:var(--gold);letter-spacing:0px;display:block;text-align:center;margin-top:6px}
+.logo-sub{font-size:10px;color:var(--mu);letter-spacing:4px;text-transform:uppercase;margin-top:4px;display:block;text-align:center;margin-bottom:20px}
+.splash-desc{font-size:13px;color:var(--mu);line-height:1.7;text-align:center;margin-bottom:20px;max-width:300px}
+.lang-lbl{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;display:block;width:100%}
+.lang-sel{width:100%;background:rgba(255,255,255,.06);border:1px solid var(--bd);border-radius:var(--r);padding:12px 14px;color:var(--tx);font-family:-apple-system,'Segoe UI','Helvetica Neue',sans-serif;font-size:14px;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236a7e6c' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;cursor:pointer;margin-bottom:20px}
+.start-btn{width:100%;padding:15px;background:var(--gold);color:#0a0a0a;border:none;border-radius:var(--r);font-family:-apple-system,'Segoe UI','Helvetica Neue',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:all .15s}
+.start-btn:active{transform:scale(.98);background:var(--gold-l)}
+
+/* ── GAME ── */
+#game{background:var(--bg)}
+.g-header{display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-bottom:1px solid rgba(201,168,76,.12);flex-shrink:0;position:relative;z-index:2}
+.g-title{font-family:'Georgia',serif;font-size:15px;color:var(--gold);font-weight:900;letter-spacing:.5px}
+.g-header-right{display:flex;gap:6px;align-items:center}
+.hbtn{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:5px 9px;color:var(--mu);font-size:11px;cursor:pointer;transition:all .15s;font-family:-apple-system,'Segoe UI','Helvetica Neue',sans-serif}
+.hbtn:active{background:var(--gold-dim);color:var(--gold);border-color:rgba(201,168,76,.3)}
+
+/* scrollable zone */
+.game-body{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.g-scroll{flex:1;overflow:hidden;padding:4px 10px 2px;display:flex;flex-direction:column;gap:3px}
+.g-scroll::-webkit-scrollbar{width:0}
+
+/* quick stats */
+.qs-row{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;flex-shrink:0}
+.qs{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:4px 4px;text-align:center}
+.qs-v{font-family:'Courier New',monospace;font-size:13px;color:var(--gold);line-height:1}
+.qs-l{font-size:7px;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-top:1px}
+
+/* mode nav — 5 equal tabs in one row */
+.mode-nav{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;background:rgba(0,0,0,.25);border-radius:8px;padding:2px;border:1px solid var(--bd);flex-shrink:0;width:100%}
+.mnav{padding:5px 2px;border:none;background:transparent;color:var(--mu);font-family:-apple-system,'Segoe UI','Helvetica Neue',sans-serif;font-size:9px;border-radius:7px;cursor:pointer;font-weight:500;transition:all .15s;line-height:1.2;text-align:center}
+.mnav.active{background:var(--gold);color:#0a0a0a;font-weight:600}
+
+/* villain bet chip on table */
+.villain-bet{
+  position:absolute;
+  background:rgba(150,80,0,.97);
+  border:1px solid rgba(255,200,80,.5);
+  border-radius:7px;
+  padding:4px 8px;
+  font-family:'Courier New',monospace;
+  font-size:10px;color:#fff;font-weight:700;
+  white-space:nowrap;pointer-events:none;z-index:3;
+  animation:fadeIn .2s ease;
+  box-shadow:0 2px 8px rgba(0,0,0,.7);
+  transform:translate(-50%,-100%);
+  margin-top:-6px;
+}
+/* Стрелка вниз — указывает на стол */
+.villain-bet::after{
+  content:'';
+  position:absolute;bottom:-6px;left:50%;
+  transform:translateX(-50%);
+  border:6px solid transparent;
+  border-top:6px solid rgba(150,80,0,.97);
+}
+/* Имя позиции — серая строка сверху */
+.villain-bet .vb-pos{
+  display:block;
+  font-size:8px;
+  color:rgba(255,200,80,.8);
+  letter-spacing:.5px;
+  line-height:1;
+  margin-bottom:2px;
+}
+.villain-bet .vb-amt{
+  display:block;
+  font-size:11px;
+  line-height:1;
+}
+
+/* table */
+.table-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;gap:5px}
+.poker-table{width:100%;aspect-ratio:2/1;flex-shrink:0;background:radial-gradient(ellipse at center,#103825 0%,var(--felt) 65%,#051a0d 100%);border-radius:50%;border:3px solid #2a4a30;box-shadow:0 0 0 4px #0d1810,0 0 0 7px #182a1a,0 12px 40px rgba(0,0,0,.8),inset 0 0 24px rgba(0,0,0,.4);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.table-center{font-family:'Georgia',serif;font-size:9px;color:rgba(201,168,76,.2);letter-spacing:3px;text-transform:uppercase;text-align:center;line-height:1.7;pointer-events:none}
+.board-inner{display:flex;gap:4px;justify-content:center;align-items:center;margin-top:-8px}
+.seat{position:absolute;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;transform:translate(-50%,-50%);transition:width .25s,height .25s}
+.seat-chip{width:36px;height:36px;border-radius:50%;border:2px solid rgba(255,255,255,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(12,26,16,.92);box-shadow:0 2px 6px rgba(0,0,0,.6);transition:all .25s cubic-bezier(.34,1.56,.64,1)}
+.seat-chip .sa{font-family:'Courier New',monospace;font-size:8px;font-weight:500;line-height:1;transition:font-size .2s}
+.seat-chip .sb{display:none;font-family:'Courier New',monospace;font-size:8px;font-weight:700;line-height:1;color:rgba(255,200,80,.95)}
+.seat.active .seat-chip{background:var(--gold);color:#0a0a0a;border-color:var(--gold-l);box-shadow:0 0 14px rgba(201,168,76,.7);transform:scale(1.15)}
+/* Betting state — chip grows and shows amount */
+.seat.betting{width:50px;height:50px}
+.seat.betting .seat-chip{
+  width:48px;height:48px;min-width:48px;min-height:48px;max-width:48px;max-height:48px;
+  background:rgba(12,26,16,.92);
+  border-color:rgba(255,255,255,.12);
+  box-shadow:0 2px 8px rgba(0,0,0,.7);
+  overflow:hidden;
+}
+.seat.betting .seat-chip .sa{font-size:7px;line-height:1.1;display:block}
+.seat.betting .seat-chip .sb{display:block;font-size:9px;font-weight:700;line-height:1.1;color:rgba(255,200,60,1)}
+.dealer-dot{position:absolute;top:-5px;right:-5px;width:11px;height:11px;background:white;color:#000;border-radius:50%;font-size:6px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.pot-badge{background:rgba(0,0,0,.7);border:1px solid rgba(201,168,76,.4);border-radius:8px;padding:3px 10px;font-family:'Courier New',monospace;font-size:12px;font-weight:700;color:var(--gold);white-space:nowrap;text-align:center}
+
+/* street bar */
+.street-bar{display:flex;gap:4px;flex-shrink:0}
+.sp{flex:1;padding:5px;text-align:center;border-radius:7px;font-size:10px;font-weight:500;background:var(--sf);border:1px solid var(--bd);color:var(--mu);transition:all .2s}
+.sp.active{background:rgba(201,168,76,.12);border-color:var(--gold);color:var(--gold)}
+.sp.done{background:rgba(76,175,114,.08);border-color:rgba(76,175,114,.2);color:var(--green)}
+
+/* cards */
+.cards-row{display:flex;gap:7px;justify-content:center;align-items:center;flex-shrink:0}
+.board-lbl{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:1.5px;text-align:center;margin-bottom:2px}
+/* Playing cards — corners only, no center overlap */
+.playing-card{
+  width:72px;height:100px;background:var(--card);border-radius:11px;
+  border:1px solid rgba(0,0,0,.12);
+  box-shadow:0 2px 8px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.85);
+  position:relative;overflow:hidden;flex-shrink:0;
+  animation:cDeal .3s cubic-bezier(.34,1.56,.64,1) both
+}
+.playing-card.red{color:var(--red)}.playing-card.black{color:var(--blk)}
+.cr{display:none}
+/* Big suit symbol centered */
+.cs{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:36px;line-height:1;opacity:.9
+}
+/* Top-left corner: rank + suit */
+.cc{
+  position:absolute;top:5px;left:6px;
+  font-family:'Courier New',monospace;font-size:13px;font-weight:700;line-height:1.15;
+  display:flex;flex-direction:column;align-items:center;gap:0
+}
+/* Bottom-right corner rotated */
+.ccb{
+  position:absolute;bottom:5px;right:6px;
+  font-size:13px;font-weight:700;line-height:1.15;
+  font-family:'Courier New',monospace;transform:rotate(180deg);
+  display:flex;flex-direction:column;align-items:center;gap:0
+}
+/* Board cards inside table */
+.board-inner .playing-card{width:38px;height:54px}
+.board-inner .playing-card .cs{display:none}
+.board-inner .playing-card .ccb{display:none}
+.board-inner .playing-card .cc{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px;
+  font-size:0;top:0;left:0
+}
+.board-inner .playing-card .cc span:first-child{
+  font-family:'Courier New',monospace;font-size:17px;font-weight:700;line-height:1
+}
+.board-inner .playing-card .cc span:last-child{
+  font-size:22px;line-height:1
+}
+@keyframes cDeal{from{opacity:0;transform:translateY(-14px) scale(.85)}to{opacity:1;transform:none}}
+
+/* situation box */
+.sit-box{background:transparent;border:none;padding:2px 0}
+.sit-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-bottom:3px}
+.sit-badge{font-size:9px;font-weight:600;padding:4px 9px;border-radius:5px;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap;-webkit-tap-highlight-color:rgba(201,168,76,.2)}
+.sit-badge.ip{background:rgba(76,175,114,.12);color:var(--green);border:1px solid rgba(76,175,114,.2)}
+.sit-badge.oop{background:rgba(232,148,58,.12);color:var(--orange);border:1px solid rgba(232,148,58,.2)}
+.sit-badge.facing{background:rgba(74,158,218,.12);color:var(--blue);border:1px solid rgba(74,158,218,.2)}
+.sit-badge.hand{font-family:'Courier New',monospace;background:rgba(201,168,76,.1);color:var(--gold);border:1px solid rgba(201,168,76,.2);font-size:10px}
+.sit-desc{font-size:10px;color:var(--mu);line-height:1.3;width:100%}
+.tex-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.ttag{font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,.05);border:1px solid var(--bd);color:var(--mu)}
+.ttag.w{color:var(--blue);background:rgba(74,158,218,.08);border-color:rgba(74,158,218,.2)}
+.ttag.d{color:var(--green);background:rgba(76,175,114,.06);border-color:rgba(76,175,114,.15)}
+.ttag.m{color:var(--amber);background:rgba(232,184,58,.08);border-color:rgba(232,184,58,.2)}
+
+/* sizing */
+.sz-box{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:5px 9px;flex-shrink:0}
+.sz-title{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
+.sz-grid{display:flex;gap:4px}
+.sz-btn{flex:1;padding:9px 3px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:8px;color:var(--tx);font-family:'Courier New',monospace;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;text-align:center}
+.sz-btn.sel{background:rgba(201,168,76,.12);border-color:var(--gold);color:var(--gold)}
+.sz-btn:active{transform:scale(.95)}
+
+/* action buttons */
+.q-text{font-size:11px;color:var(--mu);text-align:center;flex-shrink:0}
+.act-grid{display:grid;gap:5px}
+.act-btn{padding:0 6px;border:none;border-radius:10px;font-family:-apple-system,'Segoe UI','Helvetica Neue',sans-serif;font-weight:600;cursor:pointer;transition:all .12s}
+.act-btn:active{transform:scale(.96)}
+.act-btn:disabled{transform:none!important}
+.b-fold{background:linear-gradient(135deg,#2c1515,#3d1e1e);color:#e87979;border:1px solid rgba(232,121,121,.18)}
+.b-check{background:linear-gradient(135deg,#152a2a,#1d3636);color:#79d8e8;border:1px solid rgba(121,216,232,.18)}
+.b-call{background:linear-gradient(135deg,#152c1e,#1e3d28);color:#79e8a0;border:1px solid rgba(121,232,160,.18)}
+.b-bet{background:linear-gradient(135deg,#1e2c15,#273d1c);color:#c8e879;border:1px solid rgba(200,232,121,.18)}
+.b-raise{background:linear-gradient(135deg,#1e2015,#2d2a1a);color:#e8c879;border:1px solid rgba(232,200,121,.18)}
+.b-allin{background:linear-gradient(135deg,#2c1530,#3d1e40);color:#e879d8;border:1px solid rgba(232,121,216,.18)}
+
+/* progress bar */
+.progress-bar{height:2px;background:rgba(255,255,255,.05);border-radius:1px;overflow:hidden;flex-shrink:0}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-l));border-radius:1px;transition:width .5s ease}
+
+/* ad banner */
+.ad-strip{display:none}
+.ad-inner{width:100%;max-width:460px;height:38px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05);border-radius:7px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.ad-placeholder{font-size:9px;color:rgba(255,255,255,.12);letter-spacing:1px;text-transform:uppercase}
+.ad-remove{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:8px;color:rgba(255,255,255,.18);cursor:pointer;padding:2px 5px;border:none;background:transparent;border-radius:3px;font-family:-apple-system,'Segoe UI','Helvetica Neue',sans-serif;transition:all .2s}
+.ad-remove:active{color:var(--gold)}
+.ad-strip.gone{display:none}
+
+/* result sheet */
+.result-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;justify-content:center;z-index:100;animation:fadeIn .2s ease}
+.result-sheet{background:#0c1f12;border:1px solid rgba(201,168,76,.2);border-radius:18px 18px 0 0;padding:16px 16px 20px;width:100%;max-width:480px;animation:slideUp .25s cubic-bezier(.34,1.56,.64,1)}
+@keyframes slideUp{from{transform:translateY(50px);opacity:0}to{transform:none;opacity:1}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.res-head{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.res-icon{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.res-icon.ok{background:rgba(76,175,114,.15);border:1px solid rgba(76,175,114,.3)}
+.res-icon.pt{background:rgba(232,184,58,.15);border:1px solid rgba(232,184,58,.35)}
+.res-icon.no{background:rgba(232,121,121,.15);border:1px solid rgba(232,121,121,.3)}
+.res-title{font-family:'Georgia',serif;font-size:19px}
+.res-title.ok{color:#79e8a0}.res-title.pt{color:#e8b83a}.res-title.no{color:#e87979}
+.res-sub{font-size:11px;color:var(--mu);margin-top:1px}
+.res-exp{font-size:12px;color:var(--tx);line-height:1.65;margin-bottom:9px;background:rgba(255,255,255,.03);border-radius:8px;padding:9px 11px}
+.res-act-box{background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.18);border-radius:9px;padding:8px 11px;margin-bottom:11px}
+.res-act-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mu);margin-bottom:3px}
+.res-act-val{font-size:13px;color:var(--gold-l);font-weight:500}
+.res-sz{font-size:11px;color:var(--mu);margin-top:3px}
+.next-btn{width:100%;padding:12px;background:var(--gold);color:#0a0a0a;border:none;border-radius:10px;font-family:-apple-system,'Segoe UI','Helvetica Neue',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all .12s}
+.next-btn:active{transform:scale(.98);background:var(--gold-l)}
+
+/* remove ads modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px}
+.modal-box{background:#0d1f12;border:1px solid rgba(201,168,76,.3);border-radius:18px;padding:22px 20px;width:100%;max-width:340px;text-align:center}
+.modal-icon{font-size:34px;margin-bottom:10px;display:block}
+.modal-title{font-family:'Georgia',serif;font-size:19px;color:var(--gold);margin-bottom:5px}
+.modal-desc{font-size:12px;color:var(--mu);line-height:1.6;margin-bottom:14px}
+.modal-price{font-family:'Courier New',monospace;font-size:26px;color:var(--gold-l);margin-bottom:3px}
+.modal-psub{font-size:10px;color:var(--mu);margin-bottom:16px}
+.modal-buy{width:100%;padding:13px;background:var(--gold);color:#0a0a0a;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:8px;font-family:-apple-system,'Segoe UI','Helvetica Neue',sans-serif}
+.modal-cancel{width:100%;padding:10px;background:transparent;color:var(--mu);border:1px solid var(--bd);border-radius:10px;font-size:13px;cursor:pointer;font-family:-apple-system,'Segoe UI','Helvetica Neue',sans-serif}
+
+/* stats screen */
+.stats-screen{position:fixed;inset:0;background:var(--bg);z-index:50;overflow-y:auto;padding:14px 13px 90px;display:none}
+.stats-screen.open{display:block}
+.stats-back{display:flex;align-items:center;gap:8px;color:var(--gold);cursor:pointer;font-size:13px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--bd)}
+.drill-mistakes-btn{width:100%;padding:12px;background:rgba(232,184,58,.08);border:1px solid rgba(232,184,58,.25);border-radius:10px;color:var(--amber);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:10px;display:none}
+.drill-mistakes-btn.visible{display:block}
+
+.ss-title{font-family:'Georgia',serif;font-size:14px;color:var(--gold);margin:12px 0 7px}
+.ss-grid2{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}
+.ss-card{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:10px}
+.ss-card-l{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--mu);margin-bottom:3px}
+.ss-card-v{font-family:'Courier New',monospace;font-size:21px;color:var(--gold)}
+.ss-card-s{font-size:10px;color:var(--mu);margin-top:2px}
+.ss-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd)}
+.ss-row-name{font-size:11px;color:var(--tx);min-width:68px}
+.ss-bar-wrap{flex:1}
+.ss-bar-bg{height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
+.ss-bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
+.ss-bar-sub{font-size:9px;color:var(--mu);margin-top:2px}
+.ss-row-pct{font-family:'Courier New',monospace;font-size:11px;min-width:30px;text-align:right}
+.mk-item{background:var(--sf);border:1px solid var(--bd);border-radius:9px;padding:9px 11px;margin-bottom:5px}
+.mk-hand{font-family:'Courier New',monospace;font-size:11px;margin-bottom:2px}
+.mk-desc{font-size:11px;color:var(--mu)}
+.mk-cnt{float:right;font-family:'Courier New',monospace;font-size:15px;color:#e87979}
+.empty-stats{text-align:center;color:var(--mu);font-size:12px;padding:14px}
+.remove-ads-stat-btn{width:100%;padding:10px;background:rgba(74,158,218,.08);border:1px solid rgba(74,158,218,.2);border-radius:10px;color:var(--blue);font-size:13px;cursor:pointer;margin-bottom:8px;font-family:-apple-system,"Segoe UI","Helvetica Neue",sans-serif}
+.remove-ads-stat-btn.gone{display:none}
+.reset-btn{width:100%;padding:10px;background:rgba(232,121,121,.08);border:1px solid rgba(232,121,121,.2);border-radius:10px;color:#e87979;font-family:-apple-system,'Segoe UI','Helvetica Neue',sans-serif;font-size:13px;cursor:pointer;margin-bottom:14px;transition:all .15s}
+.reset-btn:active{background:rgba(232,121,121,.18)}
+.confirm-bar{display:flex;gap:8px;margin-bottom:14px}
+.confirm-bar button{flex:1;padding:10px;border:none;border-radius:10px;font-family:-apple-system,'Segoe UI','Helvetica Neue',sans-serif;font-size:13px;cursor:pointer;font-weight:500}
+.confirm-yes{background:rgba(232,121,121,.15);color:#e87979;border:1px solid rgba(232,121,121,.3)!important}
+.confirm-no{background:var(--sf);color:var(--mu);border:1px solid var(--bd)!important}
+
+
+/* ── INTERSTITIAL AD ── */
+.interstit{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.interstit-box{width:90%;max-width:340px;background:var(--sf);border:1px solid var(--bd);border-radius:18px;padding:24px;text-align:center}
+.interstit-label{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px}
+.interstit-mock{width:100%;height:260px;background:rgba(255,255,255,.03);border-radius:10px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.08);font-size:11px;letter-spacing:1px;text-transform:uppercase;border:1px dashed rgba(255,255,255,.07)}
+.interstit-close{background:var(--gold);color:#0a0a0a;border:none;border-radius:12px;padding:13px 32px;font-size:15px;font-weight:700;cursor:pointer;width:100%;max-width:280px}
+.interstit-skip{font-size:11px;color:var(--mu);cursor:pointer;padding:8px}
+.interstit-remove-ads{background:none;border:1px solid rgba(74,158,218,.3);border-radius:10px;color:var(--blue);font-size:12px;padding:8px 20px;cursor:pointer;width:90%;max-width:280px}
+
+/* ── ONBOARDING ── */
+.onboard-overlay{position:fixed;inset:0;background:rgba(5,15,9,.95);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.ob-step{display:none;flex-direction:column;align-items:center;text-align:center;max-width:320px}
+.ob-step.active{display:flex}
+.ob-icon{font-size:52px;margin-bottom:16px}
+.ob-title{font-family:'Georgia',serif;font-size:22px;font-weight:700;color:var(--gold);margin-bottom:10px}
+.ob-text{font-size:14px;color:var(--tx);line-height:1.6;margin-bottom:28px;opacity:.85}
+.ob-dots{display:flex;gap:7px;margin-bottom:24px}
+.ob-dot{width:7px;height:7px;border-radius:50%;background:var(--bd)}
+.ob-dot.active{background:var(--gold)}
+.ob-next{background:var(--gold);color:#0a0a0a;border:none;border-radius:12px;padding:14px 40px;font-size:15px;font-weight:600;cursor:pointer;width:100%;max-width:280px}
+.ob-skip{font-size:12px;color:var(--mu);margin-top:12px;cursor:pointer;padding:8px}
+/* ── REWARDED ADS BUTTON ── */
+.reward-btn{display:flex;align-items:center;gap:8px;background:rgba(74,158,218,.1);border:1px solid rgba(74,158,218,.25);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--blue);cursor:pointer;margin-bottom:8px;width:100%}
+.reward-btn svg{flex-shrink:0}
+
+
+/* ── FIXED BOTTOM PANEL ── */
+.bottom-panel{
+  flex-shrink:0;
+  background:var(--bg);
+  border-top:1px solid rgba(201,168,76,.1);
+  padding:6px 10px 8px;
+  padding-bottom:max(8px,env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;gap:5px;
+}
+.q-text{font-size:11px;color:var(--mu);flex:1}
+
+
+
+.back-from-game-btn{background:none;border:1px solid var(--bd);border-radius:10px;color:var(--mu);font-size:13px;padding:8px 18px;cursor:pointer;margin-bottom:10px;width:100%}
+.tutorial-btn{background:none;border:none;color:var(--mu);font-size:12px;cursor:pointer;padding:8px;margin-top:4px;text-decoration:underline;text-underline-offset:3px}
+
+/* ── STREAK TOAST ── */
+.streak-toast{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);
+  background:rgba(5,15,9,.97);border:2px solid var(--gold);border-radius:18px;
+  padding:18px 32px;text-align:center;z-index:300;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .25s;
+  opacity:0;pointer-events:none;
+}
+.streak-toast.show{transform:translate(-50%,-50%) scale(1);opacity:1}
+.streak-toast .st-emoji{font-size:36px;display:block;margin-bottom:4px}
+.streak-toast .st-num{font-family:'Georgia',serif;font-size:28px;color:var(--gold);font-weight:700;line-height:1}
+.streak-toast .st-lbl{font-size:12px;color:var(--mu);margin-top:3px}
+
+/* ── DAILY GOAL ── */
+.daily-wrap{display:flex;align-items:center;gap:6px;padding:0 1px}
+.daily-label{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap}
+.daily-bar-bg{flex:1;height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.daily-bar-fill{height:100%;border-radius:3px;transition:width .4s ease;background:linear-gradient(90deg,var(--green),var(--gold-l))}
+.daily-count{font-family:'Courier New',monospace;font-size:10px;color:var(--mu);white-space:nowrap}
+
+/* ── DAY STREAK BADGE ── */
+.day-streak{display:flex;align-items:center;gap:4px;background:rgba(232,184,58,.08);
+  border:1px solid rgba(232,184,58,.2);border-radius:8px;padding:2px 8px;
+  font-size:10px;color:var(--amber);font-weight:600;cursor:default}
+
+.hint-btn{
+  width:100%;padding:7px;background:rgba(74,158,218,.08);
+  border:1px solid rgba(74,158,218,.2);border-radius:10px;
+  color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;
+  display:none;align-items:center;justify-content:center;gap:5px;
+}
+.hint-btn.visible{display:flex}
+.hint-highlight{animation:hintPulse .6s ease 3}
+@keyframes hintPulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.drill-mode-bar{background:rgba(232,184,58,.1);border:1px solid rgba(232,184,58,.2);border-radius:9px;padding:5px 10px;font-size:11px;color:var(--amber);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+
+/* ── TABLET / LANDSCAPE ── */
+
+/* ══ RESPONSIVE ══════════════════════════════════════════ */
+
+/* Tablet portrait */
+/* ── Tablet 7" portrait (600px+) ── */
+@media (min-width:480px) and (orientation:portrait){
+  .screen{max-width:440px;margin:0 auto}
+  body{background:#020a04}
+  .playing-card{width:76px;height:106px}
+  .cs{font-size:38px}
+  .cc,.ccb{font-size:13px}
+  .board-inner .playing-card{width:52px;height:72px}
+  .board-inner .playing-card .cc span:first-child{font-size:19px}
+  .board-inner .playing-card .cc span:last-child{font-size:24px}
+  .act-btn{font-size:15px}
+  .bottom-panel{padding:8px 16px 12px;gap:6px}
+}
+
+/* ── Tablet 10" portrait (800px+) ── */
+@media (min-width:760px) and (orientation:portrait){
+  .screen{max-width:520px}
+  .playing-card{width:88px;height:122px}
+  .cs{font-size:44px}
+  .cc,.ccb{font-size:15px}
+  .board-inner .playing-card{width:60px;height:84px}
+  .board-inner .playing-card .cc span:first-child{font-size:22px}
+  .board-inner .playing-card .cc span:last-child{font-size:28px}
+  .act-btn{font-size:17px;min-height:58px!important}
+  .sz-btn{padding:14px 4px!important;font-size:16px!important}
+  .bottom-panel{padding:10px 20px 16px;gap:8px}
+  .g-title{font-size:19px}
+  .seat-chip{width:44px;height:44px}
+  .seat-chip .sa{font-size:10px}
+  .seat{width:48px;height:48px}
+  .seat.active .seat-chip{width:44px;height:44px}
+  .seat.betting .seat-chip{width:52px;height:52px}
+  .qs-v{font-size:16px}
+  .mnav{font-size:11px;padding:7px 2px}
+}
+
+
+
+/* ── PORTRAIT ONLY ── */
+/* Android: set screenOrientation=portrait in AndroidManifest.xml */
+/* iOS: set UISupportedInterfaceOrientations to portrait only */
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+
+
+
+
+<!-- ══ STREAK TOAST ══ -->
+<div class="streak-toast" id="streak-toast">
+  <span class="st-emoji" id="st-emoji">🔥</span>
+  <div class="st-num" id="st-num">5</div>
+  <div class="st-lbl" id="st-lbl">in a row!</div>
+</div>
+
+<!-- ══ INTERSTITIAL AD (every 20 hands) ══ -->
+<div class="interstit hidden" id="interstit">
+  <div class="interstit-box">
+    <div class="interstit-label">Advertisement</div>
+    <div class="interstit-mock">Ad Space (AdMob Interstitial)</div>
+  </div>
+  <button class="interstit-close" id="interstit-close" onclick="closeInterstit()">Continue →</button>
+  <button class="interstit-remove-ads" onclick="showAdsModal()">✕ Remove Ads — $2.99</button>
+  <span class="interstit-skip" onclick="closeInterstit()">Skip</span>
+</div>
+
+<!-- ══ ONBOARDING ══ -->
+<div class="onboard-overlay" id="onboard" style="display:none">
+  <div class="ob-step active" id="ob-0">
+    <div class="ob-icon">🃏</div>
+    <div class="ob-title" id="ob0-title"></div>
+    <div class="ob-text" id="ob0-text"></div>
+  </div>
+  <div class="ob-step" id="ob-1">
+    <div class="ob-icon">🎯</div>
+    <div class="ob-title" id="ob1-title"></div>
+    <div class="ob-text" id="ob1-text"></div>
+  </div>
+  <div class="ob-step" id="ob-2">
+    <div class="ob-icon">📏</div>
+    <div class="ob-title" id="ob2-title"></div>
+    <div class="ob-text" id="ob2-text"></div>
+  </div>
+  <div class="ob-step" id="ob-3">
+    <div class="ob-icon">📈</div>
+    <div class="ob-title" id="ob3-title"></div>
+    <div class="ob-text" id="ob3-text"></div>
+  </div>
+  <div class="ob-dots">
+    <div class="ob-dot active" id="dot-0"></div>
+    <div class="ob-dot" id="dot-1"></div>
+    <div class="ob-dot" id="dot-2"></div>
+    <div class="ob-dot" id="dot-3"></div>
+  </div>
+  <button class="ob-next" id="ob-next-btn" onclick="obNext()"></button>
+  <span class="ob-skip" id="ob-skip-btn" onclick="obSkip()"></span>
+</div>
+
+<!-- ══ SPLASH ══ -->
+<div class="screen" id="splash">
+  <div class="splash-inner">
+    <span class="logo-suit">♠</span>
+    <span class="logo-title"><span style="color:var(--gold-l)">P</span>oker<span style="color:var(--gold-l)">E</span>dge</span>
+    <span class="logo-sub">D R I L L</span>
+    <p class="splash-desc" id="splash-desc"></p>
+    <span class="lang-lbl" id="lang-lbl">Language</span>
+    <select class="lang-sel" id="lang-sel" onchange="changeLang(this.value)">
+      <option value="en">🇺🇸 English</option>
+      <option value="ru">🇷🇺 Русский</option>
+      <option value="es">🇪🇸 Español</option>
+      <option value="pt">🇧🇷 Português</option>
+      <option value="zh">🇨🇳 中文</option>
+    </select>
+    <button class="back-from-game-btn hidden" id="back-from-game-btn" onclick="hideBackBtn()">← Back to game</button>
+    <button class="start-btn" id="start-btn" onclick="startGame()"></button>
+    <button class="tutorial-btn" onclick="showTutorial()">? How to play</button>
+  </div>
+</div>
+
+<!-- ══ GAME ══ -->
+<div class="screen hidden" id="game">
+  <div class="g-header">
+    <div class="g-title">♠ PokerEdge Drill</div>
+    <div class="g-header-right">
+      <button class="hbtn" id="btn-stats" onclick="openStats()"></button>
+      <button class="hbtn" onclick="backToSplash()">⚙</button>
+    </div>
+  </div>
+
+  <div class="game-body">
+  <div class="g-scroll">
+    <div class="qs-row">
+      <div class="qs"><div class="qs-v" id="qs-c">0</div><div class="qs-l" id="ql-c"></div></div>
+      <div class="qs"><div class="qs-v" id="qs-t">0</div><div class="qs-l" id="ql-t"></div></div>
+      <div class="qs"><div class="qs-v" id="qs-a">—</div><div class="qs-l" id="ql-a">Acc%</div></div>
+      <div class="qs"><div class="qs-v" id="qs-s">0</div><div class="qs-l" id="ql-s"></div></div>
+    </div>
+    <div class="daily-wrap">
+      <span class="daily-label" id="daily-lbl">Today</span>
+      <div class="daily-bar-bg"><div class="daily-bar-fill" id="daily-fill" style="width:0%"></div></div>
+      <span class="daily-count" id="daily-count">0/25</span>
+      <div class="day-streak hidden" id="day-streak">🔥<span id="day-streak-num">0</span></div>
+    </div>
+
+    <div class="mode-nav" id="mode-nav">
+      <button class="mnav active" id="mn-starts" onclick="setMode('starts')"></button>
+      <button class="mnav" id="mn-pre"    onclick="setMode('pre')"></button>
+      <button class="mnav" id="mn-flop"   onclick="setMode('flop')"></button>
+      <button class="mnav" id="mn-turn"   onclick="setMode('turn')"></button>
+      <button class="mnav" id="mn-river"  onclick="setMode('river')"></button>
+    </div>
+    <div class="drill-mode-bar hidden" id="drill-bar">
+      <span id="drill-bar-txt"></span>
+      <span onclick="stopDrillMode()" style="cursor:pointer;font-size:18px;line-height:1">✕</span>
+    </div>
+
+    <div class="table-wrap">
+      <div class="poker-table" id="poker-table">
+        <div id="tbl-center" class="table-center">TEXAS<br>HOLD'EM</div>
+        <div id="board-inner" class="board-inner hidden"></div>
+        <div id="pot-badge" class="pot-badge hidden"></div>
+      </div>
+      <div class="cards-row" id="hole-cards"></div>
+    </div>
+
+
+  </div>
+
+
+
+  <!-- Fixed bottom panel: difficulty badge + question + actions -->
+  <div class="bottom-panel" id="bottom-panel">
+    <div class="sit-box" id="sit-box-panel">
+      <div class="sit-row" id="sit-row"></div>
+      <div class="sit-desc" id="sit-desc"></div>
+      <div class="tex-tags" id="tex-tags"></div>
+    </div>
+    <div class="sz-box hidden" id="sz-box">
+      <div class="sz-title" id="sz-title"></div>
+      <div class="sz-grid" id="sz-grid"></div>
+    </div>
+    <button class="hint-btn" id="hint-btn" onclick="useHint()">💡 <span id="hint-btn-lbl">Hint</span></button>
+    <div class="q-text" id="q-text"></div>
+    <div class="act-grid" id="act-grid" style="grid-template-columns:1fr 1fr"></div>
+  </div>
+  </div><!-- /game-body -->
+
+</div>
+
+<!-- ══ RESULT ══ -->
+<div class="result-overlay hidden" id="result-overlay">
+  <div class="result-sheet">
+    <div class="res-head">
+      <div class="res-icon" id="res-icon-wrap"><span id="res-icon">✓</span></div>
+      <div><div class="res-title" id="res-title"></div><div class="res-sub" id="res-sub"></div></div>
+    </div>
+    <div class="res-exp" id="res-exp"></div>
+    <div class="res-act-box">
+      <div class="res-act-lbl" id="res-act-lbl"></div>
+      <div class="res-act-val" id="res-act-val"></div>
+      <div class="res-sz" id="res-sz"></div>
+    </div>
+    <button class="next-btn" id="next-btn" onclick="nextQ()"></button>
+  </div>
+</div>
+
+<!-- ══ ADS MODAL ══ -->
+<div class="modal-overlay hidden" id="ads-modal">
+  <div class="modal-box">
+    <span class="modal-icon">★</span>
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-desc"  id="modal-desc"></div>
+    <div class="modal-price">$2.99</div>
+    <div class="modal-psub"  id="modal-psub"></div>
+    <button class="modal-buy"    id="modal-buy"    onclick="purchaseAds()"></button>
+    <button class="modal-cancel" id="modal-cancel" onclick="closeAdsModal()"></button>
+  </div>
+</div>
+
+<!-- ══ STATS ══ -->
+<div class="stats-screen" id="stats-screen">
+  <div class="stats-back" onclick="closeStats()">← <span id="back-lbl"></span></div>
+  <button class="drill-mistakes-btn" id="drill-btn" onclick="startDrillMode()"></button>
+  <div class="ss-grid2">
+    <div class="ss-card"><div class="ss-card-l" id="stl-tot"></div><div class="ss-card-v" id="st-tot">0</div><div class="ss-card-s" id="stls-tot"></div></div>
+    <div class="ss-card"><div class="ss-card-l" id="stl-acc"></div><div class="ss-card-v" id="st-acc">—</div><div class="ss-card-s" id="stls-acc"></div></div>
+    <div class="ss-card"><div class="ss-card-l" id="stl-pt"></div><div class="ss-card-v" id="st-pt" style="color:var(--amber)">0</div><div class="ss-card-s" id="stls-pt"></div></div>
+    <div class="ss-card"><div class="ss-card-l" id="stl-str"></div><div class="ss-card-v" id="st-str">0</div><div class="ss-card-s" id="stls-str"></div></div>
+    <div class="ss-card" style="grid-column:1/-1"><div class="ss-card-l" id="stl-days"></div><div class="ss-card-v" id="st-days" style="color:var(--amber)">0 🔥</div><div class="ss-card-s" id="stls-days"></div></div>
+  </div>
+  <div class="ss-title" id="stit-mode"></div><div id="mode-stats"></div>
+  <div class="ss-title" id="stit-pos"></div><div id="pos-stats"></div>
+  <div class="ss-title" id="stit-mistakes"></div><div id="mistake-list"></div>
+  <div style="height:16px"></div>
+  <div class="confirm-bar hidden" id="confirm-bar">
+    <button class="confirm-no" id="confirm-no" onclick="cancelReset()"></button>
+    <button class="confirm-yes" id="confirm-yes" onclick="doReset()"></button>
+  </div>
+  <button class="remove-ads-stat-btn" id="remove-ads-stat-btn" onclick="showAdsModal()"></button>
+  <button class="reset-btn" id="reset-btn" onclick="confirmReset()"></button>
+</div>
+
+<script>
+// ═══ POKEREDGE SIMPLE TRAINER ════════════════════════════════════
+// 5 languages. Action buttons always in English (universal poker terms).
+// localStorage persistence. Clean mkex() pattern for translations.
+// ═════════════════════════════════════════════════════════════════
+const L={
+en:{
+  desc:"Train poker decisions to muscle memory. Five modes — starting hands, preflop, flop, turn, river. GTO-accurate. No clutter, just reps.",
+  lang:"Language", start:"Start Training",
+  m_starts:"Starting Hands", m_pre:"Preflop", m_flop:"Flop", m_turn:"Turn", m_river:"River",
+  your_hand:"Your hand", action:"Your action?",
+  sz_bb:"Select open-raise size (BB)", sz_pot:"Select bet size (% pot)",
+  sz_if:"Select sizing first",
+  ip:"In Position (IP)", oop:"Out of Position (OOP)",
+  facing:"Facing", pot_lbl:"Pot",
+  correct:"Correct!", partial:"Close — wrong sizing!", wrong:"Wrong",
+  streak:"streak", best:"Correct action",
+  gto_sz:"GTO size", you_chose:"you chose",
+  sz_right:"Right action, wrong sizing",
+  next:"Next →", stats:"Stats", back:"Back",
+  back_to_game:"← Back to game",
+  st_tot:"Total", st_acc:"Accuracy", st_pt:"Near misses", st_str:"Best streak",
+  st_tot_s:"hands", st_acc_s:"fully correct", st_pt_s:"right action, wrong size", st_str_s:"in a row",
+  by_mode:"By mode", by_pos:"By position", mistakes:"Top mistakes",
+  empty:"No data yet", no_mk:"No mistakes yet!",
+  remove_ads:"Remove ads", mo_title:"Go Ad-Free",
+  mo_desc:"Remove all ads and support development. One-time purchase, forever.",
+  mo_psub:"one-time · no subscription", mo_buy:"Remove Ads — $2.99", mo_cancel:"Maybe later",
+  diff_title:"Select Difficulty",
+  daily_goal:"Today's goal",
+  daily_done:"Daily goal! 🎯",
+  ob0_title:"Welcome to PokerEdge Drill",
+  ob0_text:"Train your poker decisions to muscle memory. GTO-accurate scenarios across 5 game modes.",
+  ob1_title:"How It Works",
+  ob1_text:"You'll see a hand and situation. Choose the correct GTO action. Wrong answers show you the right play with explanation.",
+  ob2_title:"Sizing Matters",
+  ob2_text:"When betting or raising, pick the correct sizing first — then confirm your action. Correct action + wrong size = partial credit.",
+  ob3_title:"Track Your Progress",
+  ob3_text:"Stats track accuracy by mode and position. Review your top mistakes to focus your study.",
+  ob_next:"Next →",
+  ob_start:"Start Training →",
+  ob_skip:"Skip",
+  drill_btn:"🎯 Drill Mistakes",
+  drill_mode:"Drill Mode",
+  drill_done:"Drill complete!",
+  day_streak:"Day Streak",
+  day_streak_s:"consecutive days",
+  hint_btn:"💡 Hint (watch ad)",
+  tutorial:"? How to play",
+  reset_stats:"Reset Statistics", reset_confirm:"Reset all stats?", reset_yes:"Yes, reset", reset_no:"Cancel",
+  pos_utg:"Under the Gun — first to act, tightest range.",
+  pos_hj:"Hijack — early-middle position, opens slightly wider.",
+  pos_co:"Cut Off — late position, opens wide.",
+  pos_btn:"Button — best position, acts last postflop.",
+  pos_sb:"Small Blind — forced bet, out of position postflop.",
+  pos_bb:"Big Blind — last preflop, first postflop.",
+},
+ru:{
+  desc:"Тренируй покерные решения до автоматизма. Пять режимов — стартовые руки, префлоп, флоп, терн, ривер. GTO-точность. Только повторения.",
+  lang:"Язык", start:"Начать тренировку",
+  m_starts:"Стартовые руки", m_pre:"Префлоп", m_flop:"Флоп", m_turn:"Терн", m_river:"Ривер",
+  your_hand:"Ваши карты", action:"Ваш ход?",
+  sz_bb:"Сайзинг открытия (BB)", sz_pot:"Сайзинг ставки (% пота)",
+  sz_if:"Сначала выберите сайзинг",
+  ip:"В позиции (IP)", oop:"Вне позиции (OOP)",
+  facing:"Против", pot_lbl:"Пот",
+  correct:"Верно!", partial:"Почти — неверный сайзинг!", wrong:"Неверно",
+  streak:"подряд", best:"Правильное действие",
+  gto_sz:"GTO сайзинг", you_chose:"вы выбрали",
+  sz_right:"Верное действие, неверный сайзинг",
+  next:"Дальше →", stats:"Стат", back:"Назад",
+  back_to_game:"← Вернуться в игру",
+  st_tot:"Всего", st_acc:"Точность", st_pt:"Почти верно", st_str:"Лучшая серия",
+  st_tot_s:"рук", st_acc_s:"полностью верно", st_pt_s:"действие ok, сайзинг нет", st_str_s:"подряд",
+  by_mode:"По режимам", by_pos:"По позициям", mistakes:"Частые ошибки",
+  empty:"Данных пока нет", no_mk:"Ошибок нет!",
+  remove_ads:"Убрать рекламу", mo_title:"Без рекламы",
+  mo_desc:"Убери рекламу и поддержи разработку. Одноразовая покупка навсегда.",
+  mo_psub:"разово · без подписки", mo_buy:"Убрать рекламу — $2.99", mo_cancel:"Позже",
+  diff_title:"Уровень сложности",
+  daily_goal:"Цель дня",
+  daily_done:"Цель дня! 🎯",
+  ob0_title:"Добро пожаловать в PokerEdge Drill",
+  ob0_text:"Тренируй покерные решения до автоматизма. GTO-точные сценарии в 5 игровых режимах.",
+  ob1_title:"Как это работает",
+  ob1_text:"Ты видишь руку и ситуацию. Выбери правильное GTO действие. Неверный ответ покажет правильный ход с объяснением.",
+  ob2_title:"Сайзинг важен",
+  ob2_text:"При бете или рейзе сначала выбери размер — затем подтверди действие. Верное действие + неверный сайзинг = частичный балл.",
+  ob3_title:"Отслеживай прогресс",
+  ob3_text:"Статистика показывает точность по режиму и позиции. Анализируй частые ошибки для целенаправленной тренировки.",
+  ob_next:"Дальше →",
+  ob_start:"Начать →",
+  ob_skip:"Пропустить",
+  drill_btn:"🎯 Тренировать ошибки",
+  drill_mode:"Режим ошибок",
+  drill_done:"Тренировка завершена!",
+  day_streak:"Дней подряд",
+  day_streak_s:"дней подряд",
+  hint_btn:"💡 Подсказка (реклама)",
+  tutorial:"? Как играть",
+  reset_stats:"Сбросить статистику", reset_confirm:"Сбросить всю статистику?", reset_yes:"Да, сбросить", reset_no:"Отмена",
+  pos_utg:"Under the Gun — первый действует, самый тайтный диапазон.",
+  pos_hj:"Hijack — ранняя-средняя позиция, чуть шире.",
+  pos_co:"Cut Off — поздняя позиция, открывается широко.",
+  pos_btn:"Button — лучшая позиция, действует последним постфлоп.",
+  pos_sb:"Small Blind — обязательная ставка, вне позиции постфлоп.",
+  pos_bb:"Big Blind — последний префлоп, первый постфлоп.",
+},
+es:{
+  desc:"Entrena tus decisiones de poker hasta el automatismo. Cinco modos — manos iniciales, preflop, flop, turn, river. Precisión GTO. Solo repeticiones.",
+  lang:"Idioma", start:"Comenzar entrenamiento",
+  m_starts:"Manos Iniciales", m_pre:"Preflop", m_flop:"Flop", m_turn:"Turn", m_river:"River",
+  your_hand:"Tu mano", action:"¿Tu acción?",
+  sz_bb:"Tamaño de apertura (BB)", sz_pot:"Tamaño de apuesta (% bote)",
+  sz_if:"Selecciona el sizing primero",
+  ip:"En Posición (IP)", oop:"Fuera de Posición (OOP)",
+  facing:"Ante", pot_lbl:"Bote",
+  correct:"¡Correcto!", partial:"¡Casi — sizing incorrecto!", wrong:"Incorrecto",
+  streak:"seguidos", best:"Acción correcta",
+  gto_sz:"Sizing GTO", you_chose:"elegiste",
+  sz_right:"Acción correcta, sizing incorrecto",
+  next:"Siguiente →", stats:"Stats", back:"Volver",
+  back_to_game:"← Volver al juego",
+  st_tot:"Total", st_acc:"Precisión", st_pt:"Casi acertado", st_str:"Mejor racha",
+  st_tot_s:"manos", st_acc_s:"totalmente correcto", st_pt_s:"acción ok, sizing mal", st_str_s:"seguidos",
+  by_mode:"Por modo", by_pos:"Por posición", mistakes:"Errores frecuentes",
+  empty:"Sin datos aún", no_mk:"¡Sin errores todavía!",
+  remove_ads:"Quitar anuncios", mo_title:"Sin Anuncios",
+  mo_desc:"Elimina los anuncios y apoya el desarrollo. Compra única, para siempre.",
+  mo_psub:"pago único · sin suscripción", mo_buy:"Quitar Anuncios — $2.99", mo_cancel:"Quizás luego",
+  diff_title:"Nivel de dificultad",
+  daily_goal:"Meta del día",
+  daily_done:"¡Meta del día! 🎯",
+  ob0_title:"Bienvenido a PokerEdge Drill",
+  ob0_text:"Entrena tus decisiones de poker hasta el automatismo. Escenarios GTO precisos en 5 modos de juego.",
+  ob1_title:"Cómo funciona",
+  ob1_text:"Verás una mano y una situación. Elige la acción GTO correcta. Las respuestas incorrectas muestran la jugada correcta con explicación.",
+  ob2_title:"El sizing importa",
+  ob2_text:"Al apostar o subir, elige primero el tamaño correcto — luego confirma tu acción. Acción correcta + sizing incorrecto = crédito parcial.",
+  ob3_title:"Sigue tu progreso",
+  ob3_text:"Las stats muestran precisión por modo y posición. Revisa tus errores frecuentes para estudiar con foco.",
+  ob_next:"Siguiente →",
+  ob_start:"Comenzar →",
+  ob_skip:"Saltar",
+  drill_btn:"🎯 Practicar errores",
+  drill_mode:"Modo práctica",
+  drill_done:"¡Práctica completada!",
+  day_streak:"Racha de días",
+  day_streak_s:"días seguidos",
+  hint_btn:"💡 Pista (ver anuncio)",
+  tutorial:"? Cómo jugar",
+  reset_stats:"Resetear estadísticas", reset_confirm:"¿Resetear toda la estadística?", reset_yes:"Sí, resetear", reset_no:"Cancelar",
+  pos_utg:"Under the Gun — primero en actuar, rango más cerrado.",
+  pos_hj:"Hijack — posición temprana-media, algo más amplia.",
+  pos_co:"Cut Off — posición tardía, abre amplio.",
+  pos_btn:"Button — mejor posición, actúa último en el postflop.",
+  pos_sb:"Small Blind — apuesta forzada, fuera de posición en postflop.",
+  pos_bb:"Big Blind — último en el preflop, primero en el postflop.",
+},
+pt:{
+  desc:"Treine suas decisões de poker até a memória muscular. Cinco modos — mãos iniciais, preflop, flop, turn, river. Precisão GTO. Só repetições.",
+  lang:"Idioma", start:"Iniciar treinamento",
+  m_starts:"Mãos Iniciais", m_pre:"Preflop", m_flop:"Flop", m_turn:"Turn", m_river:"River",
+  your_hand:"Sua mão", action:"Sua ação?",
+  sz_bb:"Tamanho de abertura (BB)", sz_pot:"Tamanho da aposta (% pot)",
+  sz_if:"Selecione o sizing primeiro",
+  ip:"Em Posição (IP)", oop:"Fora de Posição (OOP)",
+  facing:"Contra", pot_lbl:"Pot",
+  correct:"Correto!", partial:"Quase — sizing errado!", wrong:"Errado",
+  streak:"seguidos", best:"Ação correta",
+  gto_sz:"Sizing GTO", you_chose:"você escolheu",
+  sz_right:"Ação certa, sizing errado",
+  next:"Próximo →", stats:"Stats", back:"Voltar",
+  back_to_game:"← Voltar ao jogo",
+  st_tot:"Total", st_acc:"Precisão", st_pt:"Quase certo", st_str:"Melhor sequência",
+  st_tot_s:"mãos", st_acc_s:"totalmente correto", st_pt_s:"ação ok, sizing errado", st_str_s:"seguidos",
+  by_mode:"Por modo", by_pos:"Por posição", mistakes:"Erros frequentes",
+  empty:"Sem dados ainda", no_mk:"Sem erros ainda!",
+  remove_ads:"Remover anúncios", mo_title:"Sem Anúncios",
+  mo_desc:"Remova anúncios e apoie o desenvolvimento. Compra única, para sempre.",
+  mo_psub:"pagamento único · sem assinatura", mo_buy:"Remover Anúncios — $2.99", mo_cancel:"Talvez depois",
+  diff_title:"Nível de dificuldade",
+  daily_goal:"Meta do dia",
+  daily_done:"Meta do dia! 🎯",
+  ob0_title:"Bem-vindo ao PokerEdge Drill",
+  ob0_text:"Treine suas decisões de poker até a memória muscular. Cenários GTO precisos em 5 modos de jogo.",
+  ob1_title:"Como funciona",
+  ob1_text:"Você verá uma mão e uma situação. Escolha a ação GTO correta. Respostas erradas mostram a jogada certa com explicação.",
+  ob2_title:"O sizing importa",
+  ob2_text:"Ao apostar ou subir, escolha primeiro o tamanho correto — depois confirme sua ação. Ação certa + sizing errado = crédito parcial.",
+  ob3_title:"Acompanhe seu progresso",
+  ob3_text:"Stats mostram precisão por modo e posição. Revise seus erros frequentes para estudar com foco.",
+  ob_next:"Próximo →",
+  ob_start:"Começar →",
+  ob_skip:"Pular",
+  drill_btn:"🎯 Praticar erros",
+  drill_mode:"Modo prática",
+  drill_done:"Prática concluída!",
+  day_streak:"Sequência de dias",
+  day_streak_s:"dias seguidos",
+  hint_btn:"💡 Dica (ver anúncio)",
+  tutorial:"? Como jogar",
+  reset_stats:"Resetar estatísticas", reset_confirm:"Resetar toda a estatística?", reset_yes:"Sim, resetar", reset_no:"Cancelar",
+  pos_utg:"Under the Gun — primeiro a agir, range mais apertado.",
+  pos_hj:"Hijack — posição inicial-média, um pouco mais ampla.",
+  pos_co:"Cut Off — posição tardia, abre amplo.",
+  pos_btn:"Button — melhor posição, age por último no postflop.",
+  pos_sb:"Small Blind — aposta forçada, fora de posição no postflop.",
+  pos_bb:"Big Blind — último no preflop, primeiro no postflop.",
+},
+zh:{
+  desc:"将扑克决策训练成肌肉记忆。五种模式——起手牌、翻牌前、翻牌、转牌、河牌。GTO精准。没有杂音，只有重复练习。",
+  lang:"语言", start:"开始训练",
+  m_starts:"起手牌", m_pre:"翻牌前", m_flop:"翻牌圈", m_turn:"转牌圈", m_river:"河牌圈",
+  your_hand:"你的手牌", action:"你的行动？",
+  sz_bb:"选择开注尺寸 (BB)", sz_pot:"选择下注尺寸（底池比例）",
+  sz_if:"请先选择下注尺寸",
+  ip:"有利位置 (IP)", oop:"不利位置 (OOP)",
+  facing:"面对", pot_lbl:"底池",
+  correct:"正确！", partial:"接近——尺寸错误！", wrong:"错误",
+  streak:"连续", best:"正确行动",
+  gto_sz:"GTO尺寸", you_chose:"你选择了",
+  sz_right:"行动正确，尺寸错误",
+  next:"下一个 →", stats:"统计", back:"返回",
+  back_to_game:"← 返回游戏",
+  st_tot:"总计", st_acc:"准确率", st_pt:"接近正确", st_str:"最佳连续",
+  st_tot_s:"手", st_acc_s:"完全正确", st_pt_s:"行动对，尺寸错", st_str_s:"连续",
+  by_mode:"按模式", by_pos:"按位置", mistakes:"常见错误",
+  empty:"暂无数据", no_mk:"还没有错误！",
+  remove_ads:"移除广告", mo_title:"无广告版",
+  mo_desc:"移除广告并支持开发。一次性购买，永久有效。",
+  mo_psub:"一次性付款·无订阅", mo_buy:"移除广告 — $2.99", mo_cancel:"以后再说",
+  diff_title:"选择难度",
+  daily_goal:"今日目标",
+  daily_done:"完成今日目标！🎯",
+  ob0_title:"欢迎使用PokerEdge Drill",
+  ob0_text:"将扑克决策训练成肌肉记忆。5种游戏模式中的GTO精准场景。",
+  ob1_title:"如何使用",
+  ob1_text:"你会看到一手牌和一个情况。选择正确的GTO行动。错误答案会显示正确打法和解释。",
+  ob2_title:"尺寸很重要",
+  ob2_text:"下注或加注时，先选择正确尺寸——然后确认你的行动。正确行动+错误尺寸=部分得分。",
+  ob3_title:"追踪你的进步",
+  ob3_text:"统计按模式和位置显示准确率。回顾你最常见的错误，有针对性地学习。",
+  ob_next:"下一个 →",
+  ob_start:"开始 →",
+  ob_skip:"跳过",
+  drill_btn:"🎯 练习错误",
+  drill_mode:"练习模式",
+  drill_done:"练习完成！",
+  day_streak:"连续天数",
+  day_streak_s:"连续天",
+  hint_btn:"💡 提示（看广告）",
+  tutorial:"? 如何游戏",
+  reset_stats:"重置统计", reset_confirm:"重置所有统计？", reset_yes:"是，重置", reset_no:"取消",
+  pos_utg:"Under the Gun — 第一个行动，范围最紧。",
+  pos_hj:"Hijack — 中早期位置，范围略宽。",
+  pos_co:"Cut Off — 晚期位置，开牌范围宽。",
+  pos_btn:"Button — 最佳位置，翻牌后最后行动。",
+  pos_sb:"Small Blind — 强制下注，翻牌后无位置。",
+  pos_bb:"Big Blind — 翻牌前最后，翻牌后第一。",
+}};
+
+let CL='en';
+function T(k){return(L[CL]||L.en)[k]||(L.en)[k]||k;}
+function ex(o){if(typeof o==='string')return o; return o[CL]||o.en||'';}
+function posDesc(abbr){return T('pos_'+abbr.toLowerCase())||abbr;}
+// All scenario explanations use mkex(en,ru,es,pt,zh)
+function mkex(en,ru,es,pt,zh){return{en,ru,es,pt,zh};}
+
+function changeLang(l){
+  CL=l;
+  document.getElementById('splash-desc').textContent=T('desc');
+  document.getElementById('lang-lbl').textContent=T('lang');
+  document.getElementById('start-btn').textContent=T('start');
+  // Tutorial button on splash
+  const tb=document.querySelector('.tutorial-btn');if(tb)tb.textContent=T('tutorial');
+  // Back to game button
+  const bb=document.getElementById('back-from-game-btn');
+  if(bb&&!bb.classList.contains('hidden'))bb.textContent=T('back_to_game');
+  hideHintBtn(); // reset hint on lang change
+  // Update onboarding text live if visible
+  const ob=document.getElementById('onboard');
+  if(ob&&ob.style.display!=='none') obUpdate();
+  // Re-render stats if open (translates mistake descriptions)
+  const ss=document.getElementById('stats-screen');
+  if(ss&&ss.style.display!=='none') renderStats();
+}
+function applyLang(){
+  changeLang(CL);
+  const M={
+    'btn-stats':'stats','mn-starts':'m_starts','mn-pre':'m_pre','mn-flop':'m_flop',
+    'mn-turn':'m_turn','mn-river':'m_river','next-btn':'next','res-act-lbl':'best',
+    'ad-remove-btn':'remove_ads','modal-title':'mo_title','modal-desc':'mo_desc',
+    'modal-psub':'mo_psub','modal-buy':'mo_buy','modal-cancel':'mo_cancel',
+    'stl-tot':'st_tot','stls-tot':'st_tot_s','stl-acc':'st_acc','stls-acc':'st_acc_s',
+    'stl-pt':'st_pt','stls-pt':'st_pt_s','stl-str':'st_str','stls-str':'st_str_s',
+    'stit-mode':'by_mode','stit-pos':'by_pos','stit-mistakes':'mistakes','back-lbl':'back',
+    'stl-days':'day_streak','stls-days':'day_streak_s',
+    'remove-ads-stat-btn':'remove_ads',
+    'reset-btn':'reset_stats','confirm-no':'reset_no','confirm-yes':'reset_yes',
+  };
+  Object.entries(M).forEach(([id,k])=>{const e=document.getElementById(id);if(e)e.textContent=T(k);});
+  document.getElementById('ql-c').textContent=T('correct').replace(/[!！]/g,'');
+  document.getElementById('ql-t').textContent=T('st_tot');
+  document.getElementById('ql-s').textContent=T('st_str');
+  document.getElementById('ql-a').textContent='Acc%';
+  const tb=document.querySelector('.tutorial-btn');if(tb)tb.textContent=T('tutorial');
+  hideHintBtn(); // reset hint on lang change
+  const dl=document.getElementById('daily-lbl');if(dl)dl.textContent=T('daily_goal')||'Today';
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SCENARIO DATA
+// ═══════════════════════════════════════════════════════════════════
+const SZL={
+  0.25:'25%',0.33:'33%',0.5:'50%',0.67:'67%',0.75:'75%',1.0:'Pot',
+  '2x':'2x','2.5x':'2.5x','3x':'3x','3.5x':'3.5x','4x':'4x'
+};
+
+// ── STARTING HANDS ────────────────────────────────────────────────
+// tier 1=premium, 2=strong, 3=medium, 4=speculative, 5=trash
+// gto = primary action; mixed = also acceptable (no penalty)
+const STARTS=[
+{id:'AA',c1:'A',s1:'♠',c2:'A',s2:'♥',tier:1,name:'AA',gto:'raise',mixed:null,ex:mkex(
+  'Pocket Aces — the best hand. GTO: raise 100% from every position. Open 2.5x from BTN/CO, 3x from UTG/HJ/SB. Never limp. vs 3-bet: 4-bet for value or call in position.',
+  'Карманные тузы — лучшая рука. GTO: рейз 100% с любой позиции. 2.5x с BTN/CO, 3x с UTG/HJ/SB. Никогда не лимп. Против 3-бета: 4-бет для ценности или колл в позиции.',
+  'Ases — la mejor mano. GTO: subir 100% desde cualquier posición. 2.5x desde BTN/CO, 3x desde UTG/HJ/SB. Nunca limp. Ante 3-bet: 4-bet por valor o call en posición.',
+  'Ases — a melhor mão. GTO: raise 100% de qualquer posição. 2.5x do BTN/CO, 3x do UTG/HJ/SB. Nunca limp. Contra 3-bet: 4-bet para valor ou call em posição.',
+  '口袋A — 最好手牌。GTO：任何位置100%加注。BTN/CO开2.5x，UTG/HJ/SB开3x。永远不要平跟。面对3注：4注取值或有位置跟注。')},
+{id:'KK',c1:'K',s1:'♠',c2:'K',s2:'♥',tier:1,name:'KK',gto:'raise',mixed:null,ex:mkex(
+  'Pocket Kings — 2nd best hand. GTO: always raise. vs 3-bet: 4-bet for value or flat call. Never passive-call a 3-bet with KK. Ace on flop: pot control, do not auto-fold.',
+  'Карманные короли — 2-я лучшая рука. GTO: рейз всегда. Против 3-бета: 4-бет для ценности или флет-колл. Никогда не пассивный колл с KK. Туз на флопе: pot control, не автоматический фолд.',
+  'Reyes — 2ª mejor mano. GTO: siempre subir. vs 3-bet: 4-bet o call. Nunca call pasivo con KK. As en flop: pot control, no auto-fold.',
+  'Reis — 2ª melhor mão. GTO: sempre raise. vs 3-bet: 4-bet ou call. Nunca call passivo com KK. Ás no flop: pot control, não auto-fold.',
+  '口袋K — 第二好手牌。GTO：永远加注。对3注：4注取值或平跟。切勿被动跟KK的3注。翻牌出现A：控制底池，不要自动弃牌。')},
+{id:'QQ',c1:'Q',s1:'♠',c2:'Q',s2:'♥',tier:1,name:'QQ',gto:'raise',mixed:null,ex:mkex(
+  'Pocket Queens — always raise. vs cold 4-bet from UTG: fold or call. In position vs 3-bet: continue (call or 4-bet). Common mistake: over-folding preflop or passive limping.',
+  'Карманные дамы — рейз всегда. Против холодного 4-бета с UTG: фолд или колл. В позиции против 3-бета: продолжать (колл или 4-бет). Частая ошибка: избыточный фолд префлоп.',
+  'Damas — siempre subir. vs 4-bet frío UTG: fold o call. En posición vs 3-bet: continuar. Error común: foldear demasiado preflop.',
+  'Damas — sempre raise. vs 4-bet frio UTG: fold ou call. Em posição vs 3-bet: continuar. Erro comum: foldar demais preflop.',
+  '口袋Q — 永远加注。对UTG冷4注：弃牌或跟注。有位置对3注：继续。常见错误：翻牌前过多弃牌。')},
+{id:'JJ',c1:'J',s1:'♠',c2:'J',s2:'♥',tier:1,name:'JJ',gto:'raise',mixed:null,ex:mkex(
+  'Pocket Jacks — always raise. vs 4-bet from UTG: mixed call/fold. vs 3-bet in position: call or 4-bet bluff depending on depth. JJ plays well on boards below J.',
+  'Карманные валеты — рейз всегда. Против 4-бета с UTG: смешанный колл/фолд. Против 3-бета в позиции: колл или 4-бет блаф. JJ хорошо играет на бордах ниже J.',
+  'Jotas — siempre subir. vs 4-bet UTG: call/fold mixto. vs 3-bet en posición: call o 4-bet bluff. JJ juega bien en boards por debajo de J.',
+  'Valetes — sempre raise. vs 4-bet UTG: call/fold misto. vs 3-bet em posição: call ou 4-bet bluff. JJ joga bem em boards abaixo de J.',
+  '口袋J — 永远加注。对UTG的4注：混合跟注/弃牌。有位置对3注：跟注或4注诈唬。JJ在J以下牌面表现好。')},
+{id:'TT',c1:'T',s1:'♠',c2:'T',s2:'♥',tier:1,name:'TT',gto:'raise',mixed:'call',ex:mkex(
+  'Pocket Tens — raise. vs 3-bet: mixed call / 4-bet bluff. On boards with J-Q-K-A: caution and pot control. Excellent set-mining potential — aim to flop a set (1-in-8 chance).',
+  'Карманные десятки — рейз. Против 3-бета: смешанный колл / 4-бет блаф. На бордах с J-Q-K-A: осторожность и pot control. Отличный потенциал сет-майнинга.',
+  'Tens — subir. vs 3-bet: call / 4-bet bluff mixto. En boards J-Q-K-A: precaución y pot control. Excelente potencial de set-mining.',
+  'Tens — raise. vs 3-bet: call / 4-bet bluff misto. Em boards J-Q-K-A: cuidado e pot control.',
+  '口袋10 — 加注。对3注：混合跟注/4注诈唬。J-Q-K-A牌面：谨慎和控制底池。出色的套三条潜力（1/8概率）。')},
+{id:'AKs',c1:'A',s1:'♠',c2:'K',s2:'♠',tier:1,name:'AKs',gto:'raise',mixed:null,ex:mkex(
+  'AK suited — best connector. Raise 100% from any position. vs 3-bet: 4-bet or call. Powerful both as value (TPTK) and draw (nut-flush draw). Never fold preflop.',
+  'AK одномастные — лучший коннектор. Рейз 100% с любой позиции. Против 3-бета: 4-бет или колл. Силён как ценность (TPTK) и как дро (нат-флаш). Никогда не фолд префлоп.',
+  'AK suited — el mejor conector. Raise 100% desde cualquier posición. vs 3-bet: 4-bet o call. Fuerte como valor (TPTK) y como draw (nut-flush). Nunca fold preflop.',
+  'AK suited — o melhor conector. Raise 100% de qualquer posição. vs 3-bet: 4-bet ou call. Forte como valor (TPTK) e draw (nut-flush). Nunca fold preflop.',
+  'AK同花 — 最好连牌。任何位置100%加注。对3注：4注或跟注。强大的价值牌（TPTK）和听牌（坚果同花）。翻牌前永不弃牌。')},
+{id:'AKo',c1:'A',s1:'♠',c2:'K',s2:'♦',tier:1,name:'AKo',gto:'raise',mixed:null,ex:mkex(
+  'AK offsuit — raise 100%. vs 3-bet: mainly 4-bet, sometimes call. Slightly weaker than AKs (no flush draw). Premium hand postflop when ace or king hits the board.',
+  'AK разномастные — рейз 100%. Против 3-бета: преимущественно 4-бет, иногда колл. Чуть слабее AKs (нет флаш-дро). Премиальная постфлоп когда туз или король попадает на борд.',
+  'AK offsuit — raise 100%. vs 3-bet: principalmente 4-bet, a veces call. Ligeramente más débil que AKs (sin flush draw). Mano premium postflop cuando sale As o Rey.',
+  'AK offsuit — raise 100%. vs 3-bet: principalmente 4-bet, às vezes call. Ligeiramente mais fraco que AKs (sem flush draw).',
+  'AK非同花 — 100%加注。对3注：主要4注，有时跟注。比AK同花略弱（无同花听牌）。A或K落牌面时翻牌后很强。')},
+{id:'99',c1:'9',s1:'♠',c2:'9',s2:'♥',tier:2,name:'99',gto:'raise',mixed:'call',ex:mkex(
+  'Pocket Nines — raise most positions, mixed (raise/call) from UTG. Target: flop a set or be overpair on a low board. On T+ boards without a set: caution and pot control.',
+  'Карманные девятки — рейз в большинстве позиций, смешанный с UTG. Цель: флопнуть сет или быть оверпарой на низком борде. На бордах T+ без сета: осторожность.',
+  'Nueves — raise en la mayoría de posiciones, mixto desde UTG. Objetivo: hacer set o ser overpair en board bajo. En boards T+ sin set: precaución.',
+  'Noves — raise na maioria das posições, misto do UTG. Objetivo: fazer set ou ser overpair em board baixo.',
+  '口袋9 — 大多数位置加注，UTG混合策略。目标：翻出三条或在低牌面成为超对。T以上牌面无三条：谨慎。')},
+{id:'88',c1:'8',s1:'♠',c2:'8',s2:'♥',tier:2,name:'88',gto:'raise',mixed:'call',ex:mkex(
+  'Pocket Eights — raise CO/BTN/SB, mixed from UTG/HJ. Main value: flopping a set. On high boards without improvement: pot control, do not overcommit.',
+  'Карманные восьмёрки — рейз CO/BTN/SB, смешанный с UTG/HJ. Основная ценность: флоп сета. На высоких бордах без улучшения: pot control.',
+  'Ochos — raise CO/BTN/SB, mixto desde UTG/HJ. Valor principal: hacer set. En boards altos sin mejora: pot control.',
+  'Oitos — raise CO/BTN/SB, misto do UTG/HJ. Valor principal: fazer set. Em boards altos sem melhora: pot control.',
+  '口袋8 — CO/BTN/SB加注，UTG/HJ混合。主要价值：翻出三条。高牌面无改善：控制底池，不要过度承诺。')},
+{id:'77',c1:'7',s1:'♠',c2:'7',s2:'♥',tier:2,name:'77',gto:'call',mixed:'raise',ex:mkex(
+  'Pocket Sevens — raise BTN/CO, call early positions. Classic set-mining. Needs ~7.5:1 implied odds. Without a set on flop: pot control and fold to heavy action.',
+  'Карманные семёрки — рейз BTN/CO, колл в ранних позициях. Классический сет-майнинг. Нужны ~7.5:1 implied odds. Без сета на флопе: pot control и фолд против сильной активности.',
+  'Sietes — raise BTN/CO, call posiciones tempranas. Set-mining clásico. Necesita ~7.5:1 implied odds. Sin set: pot control y fold vs acción fuerte.',
+  'Setes — raise BTN/CO, call posições iniciais. Set-mining clássico. Precisa de ~7.5:1 implied odds.',
+  '口袋7 — BTN/CO加注，早位跟注。经典套牌挖掘。需要约7.5:1隐含赔率。翻牌无三条：控制底池，面对强逼迫弃牌。')},
+{id:'AQs',c1:'A',s1:'♠',c2:'Q',s2:'♠',tier:2,name:'AQs',gto:'raise',mixed:null,ex:mkex(
+  'AQ suited — raise 100%. vs 3-bet: mixed 4-bet/call. Dominates AJ, AT. Excellent on ace-high and flush-draw boards. Main risk: dominated by AK in 4-bet pots.',
+  'AQ одномастные — рейз 100%. Против 3-бета: смешанный 4-бет/колл. Доминирует AJ, AT. Отлично на тузовых бордах и флаш-дро. Главный риск: доминирован AK в 4-бет потах.',
+  'AQ suited — raise 100%. vs 3-bet: mixto 4-bet/call. Domina AJ, AT. Excelente en boards con As y flush draws. Riesgo principal: dominado por AK.',
+  'AQ suited — raise 100%. vs 3-bet: misto 4-bet/call. Domina AJ, AT. Excelente em boards com Ás e flush draws.',
+  'AQ同花 — 100%加注。对3注：混合4注/跟注。支配AJ、AT。A高和同花听牌牌面表现出色。主要风险：在4注底池被AK支配。')},
+{id:'JTs',c1:'J',s1:'♠',c2:'T',s2:'♠',tier:3,name:'JTs',gto:'raise',mixed:'call',ex:mkex(
+  'JT suited — best Broadway connector. Raise CO/BTN, mixed from HJ/UTG. Can flop OESD, pair+FD, flush draw, two pair. High equity multiway. Strong vs wide ranges.',
+  'JT одномастные — лучший Broadway-коннектор. Рейз CO/BTN, смешанный HJ/UTG. Может флопнуть OESD, пару+FD, флаш-дро, две пары. Высокий equity многовейно.',
+  'JT suited — mejor conector Broadway. Raise CO/BTN, mixto HJ/UTG. Puede flopear OESD, par+FD, flush draw, dos pares. Alto equity multiway.',
+  'JT suited — melhor conector Broadway. Raise CO/BTN, misto HJ/UTG. Pode flopear OESD, par+FD, flush draw, dois pares.',
+  'JT同花 — 最好百老汇连牌。CO/BTN加注，HJ/UTG混合。可以翻出OESD、对子+FD、同花听牌、两对。多人底池权益高。')},
+{id:'A5s',c1:'A',s1:'♠',c2:'5',s2:'♠',tier:4,name:'A5s',gto:'raise',mixed:null,ex:mkex(
+  'A5 suited — key 3-bet bluffing hand. Has ace blocker (blocks AA/AK in villain range), flush draw equity, nut-low potential. Use as 3-bet bluff from BTN vs CO or SB vs BTN.',
+  'A5 одномастные — ключевая рука для 3-бет блафа. Блокер туза (блокирует AA/AK в диапазоне соперника), equity флаш-дро, нат-лоу потенциал.',
+  'A5 suited — mano clave de 3-bet bluff. Blocker de as (bloquea AA/AK del villano), equity flush draw, potencial nut-low.',
+  'A5 suited — mão chave de 3-bet bluff. Blocker de ás (bloqueia AA/AK do vilão), equity flush draw, potencial nut-low.',
+  'A5同花 — 关键3注诈唬手牌。有A阻断牌（阻断对手AA/AK），同花听牌权益，坚果低牌潜力。')},
+{id:'72o',c1:'7',s1:'♠',c2:'2',s2:'♥',tier:5,name:'72o',gto:'fold',mixed:null,ex:mkex(
+  '7-2 offsuit — fold 100% from every position. Worst hand in poker: no connectivity, no flush potential, terrible kicker. No standard opening range includes this hand.',
+  '7-2 разномастные — фолд 100% с любой позиции. Худшая рука в покере: нет коннектности, нет флаш-потенциала, ужасный кикер.',
+  '7-2 offsuit — fold 100% desde cualquier posición. Peor mano en el poker: sin conectividad, sin flush potential, kicker terrible.',
+  '7-2 offsuit — fold 100% de qualquer posição. Pior mão no poker: sem conectividade, sem flush potential, kicker terrível.',
+  '7-2非同花 — 任何位置100%弃牌。扑克最差手牌：无连接性，无同花潜力，最差踢脚牌。')},
+{id:'K9o',c1:'K',s1:'♠',c2:'9',s2:'♥',tier:5,name:'K9o',gto:'fold',mixed:null,ex:mkex(
+  'K9 offsuit — fold from UTG/HJ/CO/SB. Marginal raise from BTN only (~30%). Without a suit, dominated by AK/KQ/KJ. Common mistake: overvaluing king-x hands from early positions.',
+  'K9 разномастные — фолд с UTG/HJ/CO/SB. Маргинальный рейз только с BTN (~30%). Без масти доминирован AK/KQ/KJ. Частая ошибка: переоценка K-x рук с ранних позиций.',
+  'K9 offsuit — fold desde UTG/HJ/CO/SB. Raise marginal solo desde BTN (~30%). Sin suit, dominado por AK/KQ/KJ.',
+  'K9 offsuit — fold de UTG/HJ/CO/SB. Raise marginal só do BTN (~30%). Sem suit, dominado por AK/KQ/KJ.',
+  'K9非同花 — UTG/HJ/CO/SB弃牌。仅在BTN可以边际加注（约30%）。无花色，被AK/KQ/KJ支配。常见错误：在早位高估K-x手牌。')},
+];
+
+// ── PREFLOP SITUATIONS ────────────────────────────────────────────
+// Logic verification:
+// p1 CO opens 2.5bb: pot = 2.5+0.5+1 = 4bb  ✓
+// p2 BTN opens 2.5bb, SB 3-bets 9bb: pot = 9+2.5+1 = 12.5bb (SB already posted 0.5) → 11.5bb ✓
+// p3 UTG opens 3bb: pot = 3+0.5+1 = 4.5bb ✓
+// p4 BTN opens 2.5bb: pot = 2.5+0.5+1 = 4bb ✓
+// p5 BTN opens 2.5bb, SB 3-bets 9bb: hero=BTN, pot = 9+2.5+1(BB) = 12.5bb → 11.5bb ✓
+// p6 UTG opens 3bb, BTN 3-bets 9bb: hero=UTG, pot = 9+3+1.5(blinds) = 13.5bb → 12bb ✓
+// p7 CO opens 2.5bb, BB 3-bets 10bb: hero=CO, pot = 10+2.5+0.5 = 13bb ✓
+// p8 BTN opens 2.5bb, CO 3-bets 9bb: hero=BTN, pot = 9+2.5+1.5 = 13bb → 11.5bb ✓
+// p9 BTN opens 2.5bb, BB 3-bets 9bb, BTN 4-bets 22bb: hero=BB, pot=22+9+0.5+1=32.5bb → 26bb ✓
+// p10 CO opens 2.5bb, BTN 3-bets 9bb, CO 4-bets 20bb: hero=CO, pot=20+9+1.5=30.5bb → 24bb ✓
+// p11 HJ limps 1bb: pot = 1+0.5+1 = 2.5bb ✓
+// p12 UTG no villain: pot = 0.5+1 = 1.5bb ✓
+const PRE=[
+{id:'p1',hp:'BTN',vp:'CO',action:'raise',amount:'2.5bb',pot:'4bb',
+ hole:[{r:'A',s:'♠'},{r:'Q',s:'♣'}],gto:'call',acts:['fold','call','raise'],ex:mkex(
+  'AQo on BTN facing CO 2.5bb open (pot 4bb). GTO: flat call. Too strong to fold, not strong enough to 3-bet for value — AK dominates AQo. Call in position to realize equity and apply postflop pressure.',
+  'AQo BTN против открытия CO 2.5bb (пот 4bb). GTO: флет-колл. Слишком сильна для фолда, недостаточно для 3-бета для ценности — AK доминирует AQo. Колл в позиции для реализации equity.',
+  'AQo en BTN vs apertura CO 2.5bb (bote 4bb). GTO: flat call. Demasiado fuerte para fold, no suficiente para 3-bet de valor — AK domina AQo. Call en posición para realizar equity.',
+  'AQo no BTN vs abertura CO 2.5bb (pot 4bb). GTO: flat call. Forte demais para fold, não suficiente para 3-bet de valor — AK domina AQo.',
+  'BTN面对CO 2.5bb开牌（底池4bb）的AQo。GTO：平跟。太强不能弃牌，但不够强到为价值3注——AK支配AQo。有位置跟注实现权益。')},
+{id:'p2',hp:'SB',vp:'BTN',action:'raise',amount:'2.5bb',pot:'4bb',
+ hole:[{r:'A',s:'♥'},{r:'K',s:'♠'}],gto:'raise',acts:['fold','call','raise'],ex:mkex(
+  'AKo on SB facing BTN 2.5bb open (pot 4bb). GTO: 3-bet to 9-10bb. AK is at the top of the SB 3-bet range. Flat-calling AKo OOP is a leak — gives BTN free positional advantage postflop.',
+  'AKo SB против открытия BTN 2.5bb (пот 4bb). GTO: 3-бет до 9-10bb. AK — вершина 3-бет диапазона SB. Флет AKo OOP — утечка EV, даёт BTN бесплатное позиционное преимущество.',
+  'AKo en SB vs apertura BTN 2.5bb (bote 4bb). GTO: 3-bet a 9-10bb. AK en el tope del rango 3-bet del SB. Flat call OOP da ventaja posicional gratuita al BTN.',
+  'AKo no SB vs abertura BTN 2.5bb (pot 4bb). GTO: 3-bet a 9-10bb. AK no topo do range 3-bet do SB. Flat call OOP dá vantagem posicional gratuita ao BTN.',
+  'SB面对BTN的2.5bb开牌（底池4bb）的AKo。GTO：3注到9-10bb。AK在SB 3注范围顶端。OOP平跟是EV漏洞——给BTN免费的位置优势。')},
+{id:'p3',hp:'BB',vp:'UTG',action:'raise',amount:'3bb',pot:'4.5bb',
+ hole:[{r:'9',s:'♦'},{r:'8',s:'♦'}],gto:'call',acts:['fold','call','raise'],ex:mkex(
+  '98 diamonds in BB vs UTG 3bb open (pot 4.5bb). GTO: call. BB gets ~2.5:1 pot odds — 98 suited defends vs tight UTG range. 3-betting is too loose vs UTG. Realize equity OOP with a good draw hand.',
+  '98 бубны BB против открытия UTG 3bb (пот 4.5bb). GTO: колл. BB получает ~2.5:1 потовые одсы — 98 одномастные защищают против тайтного UTG. 3-бет слишком широкий.',
+  '98 cuadros BB vs apertura UTG 3bb (bote 4.5bb). GTO: call. BB recibe ~2.5:1 pot odds — 98 suited defiende vs rango UTG ajustado. 3-bet es demasiado amplio.',
+  '98 ouros BB vs abertura UTG 3bb (pot 4.5bb). GTO: call. BB recebe ~2.5:1 pot odds — 98 suited defende vs range UTG apertado.',
+  'BB面对UTG的3bb开牌（底池4.5bb）的98方块。GTO：跟注。底池赔率约2.5:1，98同花防守对阵紧UTG范围。3注对UTG太宽松。')},
+{id:'p4',hp:'BB',vp:'BTN',action:'raise',amount:'2.5bb',pot:'4bb',
+ hole:[{r:'T',s:'♣'},{r:'5',s:'♣'}],gto:'call',acts:['fold','call','raise'],ex:mkex(
+  'T5 clubs in BB vs BTN 2.5bb open (pot 4bb). GTO: call — BB defense. BB gets ~3.5:1 pot odds. T5 suited defends with flush potential and pair equity. Folding gives BTN too much free steal frequency.',
+  'T5 трефы BB против открытия BTN 2.5bb (пот 4bb). GTO: колл — защита BB. BB получает ~3.5:1 потовые одсы. T5 одномастные защищают с флаш-потенциалом. Фолд даёт BTN слишком большую частоту стила.',
+  'T5 tréboles BB vs apertura BTN 2.5bb (bote 4bb). GTO: call — defensa BB. BB recibe ~3.5:1 pot odds. T5 suited defiende con potencial flush. Fold da demasiada frecuencia de robo al BTN.',
+  'T5 paus BB vs abertura BTN 2.5bb (pot 4bb). GTO: call — defesa BB. BB recebe ~3.5:1 pot odds. T5 suited defende com potencial flush.',
+  'BB面对BTN的2.5bb开牌（底池4bb）的T5梅花。GTO：跟注（BB防守）。底池赔率约3.5:1。T5同花凭借同花潜力防守。弃牌给BTN太高的免费偷盲频率。')},
+{id:'p5',hp:'BTN',vp:'SB',action:'3-bet',amount:'9bb',pot:'11.5bb',
+ hole:[{r:'K',s:'♥'},{r:'K',s:'♦'}],gto:'raise',acts:['fold','call','raise'],ex:mkex(
+  'KK on BTN facing SB 3-bet to 9bb (pot 11.5bb). GTO: 4-bet to ~22bb for value. KK is at the top of the 4-bet value range. Never flat KK in position vs a 3-bet — build the pot. vs 5-bet jam: call.',
+  'KK BTN против 3-бета SB до 9bb (пот 11.5bb). GTO: 4-бет до ~22bb для ценности. KK — вершина 4-бет диапазона. Никогда не флет KK в позиции против 3-бета. Против 5-бет шова: колл.',
+  'KK en BTN vs 3-bet SB a 9bb (bote 11.5bb). GTO: 4-bet a ~22bb por valor. Nunca flat KK vs 3-bet en posición. vs 5-bet jam: call.',
+  'KK no BTN vs 3-bet SB a 9bb (pot 11.5bb). GTO: 4-bet a ~22bb por valor. Nunca flat KK vs 3-bet em posição. vs 5-bet jam: call.',
+  'BTN面对SB的9bb 3注（底池11.5bb）的KK。GTO：~22bb的4注取值。永不平跟有位置的KK对3注。对5注全押：跟注。')},
+{id:'p6',hp:'UTG',vp:'BTN',action:'3-bet',amount:'9bb',pot:'12bb',
+ hole:[{r:'J',s:'♠'},{r:'T',s:'♠'}],gto:'fold',acts:['fold','call','raise'],ex:mkex(
+  'JTs UTG facing BTN 3-bet to 9bb (pot 12bb). GTO: fold. UTG opens only ~15% — JTs does not continue OOP vs BTN 3-bet. Poor equity realization OOP with speculative hand. Negative EV to call or 4-bet.',
+  'JTs UTG против 3-бета BTN до 9bb (пот 12bb). GTO: фолд. UTG открывает только ~15% — JTs не продолжает OOP против 3-бета BTN. Плохая реализация equity OOP. Отрицательный EV для колла или 4-бета.',
+  'JTs UTG vs 3-bet BTN a 9bb (bote 12bb). GTO: fold. UTG solo abre ~15% — JTs no continúa OOP vs 3-bet BTN. Mala realización de equity OOP.',
+  'JTs UTG vs 3-bet BTN a 9bb (pot 12bb). GTO: fold. UTG abre apenas ~15% — JTs não continua OOP vs 3-bet BTN.',
+  'UTG JTs面对BTN的9bb 3注（底池12bb）。GTO：弃牌。UTG只开约15%——JTs不能OOP应对BTN的3注。投机牌OOP权益实现差。')},
+{id:'p7',hp:'CO',vp:'BB',action:'3-bet',amount:'10bb',pot:'13bb',
+ hole:[{r:'A',s:'♣'},{r:'5',s:'♣'}],gto:'raise',acts:['fold','call','raise'],ex:mkex(
+  'A5s in CO vs BB 3-bet to 10bb (pot 13bb). GTO: 4-bet bluff to ~22bb. A5s is ideal — ace blocker cuts AA/AK combos in BB range, flush draw equity, nut-low potential. Folds out BB non-premiums.',
+  'A5s CO против 3-бета BB до 10bb (пот 13bb). GTO: 4-бет блаф до ~22bb. A5s идеальна — блокер туза срезает AA/AK в диапазоне BB, equity флаша, нат-лоу потенциал.',
+  'A5s CO vs 3-bet BB a 10bb (bote 13bb). GTO: 4-bet bluff a ~22bb. A5s es ideal — blocker de as corta combos AA/AK del BB, equity flush draw, potencial nut-low.',
+  'A5s CO vs 3-bet BB a 10bb (pot 13bb). GTO: 4-bet bluff a ~22bb. A5s é ideal — blocker de ás corta combos AA/AK do BB, equity flush draw, potencial nut-low.',
+  'CO面对BB的10bb 3注（底池13bb）的A5s。GTO：~22bb的4注诈唬。A5s完美——A阻断牌削减BB范围中的AA/AK，同花权益，坚果低牌潜力。')},
+{id:'p8',hp:'BTN',vp:'CO',action:'3-bet',amount:'9bb',pot:'11.5bb',
+ hole:[{r:'7',s:'♠'},{r:'7',s:'♥'}],gto:'call',acts:['fold','call','raise'],ex:mkex(
+  '77 on BTN facing CO 3-bet to 9bb (pot 11.5bb). GTO: flat call. 77 has implied odds to mine a set. 4-betting is too thin vs CO tight 3-bet range. Calling and set-mining is highest EV.',
+  '77 BTN против 3-бета CO до 9bb (пот 11.5bb). GTO: флет-колл. 77 имеет implied odds для сет-майнинга. 4-бет слишком тонкий против тайтного 3-бет диапазона CO.',
+  '77 en BTN vs 3-bet CO a 9bb (bote 11.5bb). GTO: flat call. 77 tiene implied odds para set-mining. 4-bet demasiado delgado vs rango 3-bet ajustado del CO.',
+  '77 no BTN vs 3-bet CO a 9bb (pot 11.5bb). GTO: flat call. 77 tem implied odds para set-mining. 4-bet muito fino vs range 3-bet apertado do CO.',
+  'BTN面对CO的9bb 3注（底池11.5bb）的77。GTO：平跟。77有套三条的隐含赔率。对CO紧3注范围4注太薄。跟注套三条是最高EV。')},
+{id:'p9',hp:'BB',vp:'BTN',action:'4-bet',amount:'22bb',pot:'26bb',
+ hole:[{r:'Q',s:'♦'},{r:'Q',s:'♣'}],gto:'call',acts:['fold','call','raise'],ex:mkex(
+  'QQ in BB facing BTN 4-bet to 22bb (pot 26bb). GTO: call. QQ is too strong to fold but 5-betting gets called only by KK/AA. Call and play postflop — QQ plays well especially on low boards (below Q).',
+  'QQ BB против 4-бета BTN до 22bb (пот 26bb). GTO: колл. QQ слишком сильна для фолда, но 5-бет вызывают только KK/AA. Колл и игра постфлоп — QQ хорошо играет особенно на низких бордах.',
+  'QQ en BB vs 4-bet BTN a 22bb (bote 26bb). GTO: call. QQ es demasiado fuerte para fold, pero 5-bet es llamado solo por KK/AA. Call y jugar postflop — QQ juega bien en boards bajos.',
+  'QQ no BB vs 4-bet BTN a 22bb (pot 26bb). GTO: call. QQ forte demais para fold, mas 5-bet é chamado só por KK/AA.',
+  'BB面对BTN的22bb 4注（底池26bb）的QQ。GTO：跟注。QQ太强不能弃牌，但5注只被KK/AA跟注。跟注翻后游戏——QQ在低牌面（Q以下）表现好。')},
+{id:'p10',hp:'CO',vp:'BTN',action:'4-bet',amount:'20bb',pot:'24bb',
+ hole:[{r:'A',s:'♠'},{r:'J',s:'♠'}],gto:'fold',acts:['fold','call','raise'],ex:mkex(
+  'AJs in CO facing BTN 4-bet to 20bb (pot 24bb). GTO: fold. AJs is too weak vs a 4-bet — dominated by AK/AQ and behind AA/KK/QQ. Not in the 5-bet or call range here. Folding saves ~20bb.',
+  'AJs CO против 4-бета BTN до 20bb (пот 24bb). GTO: фолд. AJs слишком слаба против 4-бета — доминирована AK/AQ и позади AA/KK/QQ. Фолд сохраняет ~20bb.',
+  'AJs en CO vs 4-bet BTN a 20bb (bote 24bb). GTO: fold. AJs es demasiado débil vs 4-bet — dominada por AK/AQ, por detrás de AA/KK/QQ. Fold ahorra ~20bb.',
+  'AJs no CO vs 4-bet BTN a 20bb (pot 24bb). GTO: fold. AJs é fraco demais vs 4-bet — dominada por AK/AQ, atrás de AA/KK/QQ.',
+  'CO面对BTN的20bb 4注（底池24bb）的AJs。GTO：弃牌。AJs对4注太弱——被AK/AQ支配，落后于AA/KK/QQ。弃牌节省约20bb。')},
+{id:'p11',hp:'BTN',vp:'HJ',action:'limp',amount:'1bb',pot:'2.5bb',
+ hole:[{r:'A',s:'♦'},{r:'J',s:'♦'}],gto:'raise',acts:['fold','call','raise'],ex:mkex(
+  'AJs on BTN — HJ limps (pot 2.5bb). GTO: iso-raise to 4-5bb. Overlimping AJs in position is a serious EV leak. Raise to isolate and play heads-up in position with a premium hand.',
+  'AJs BTN — HJ лимпует (пот 2.5bb). GTO: изо-рейз до 4-5bb. Оверлимп AJs в позиции — серьёзная утечка EV. Рейз для изоляции и игры хедз-ап в позиции.',
+  'AJs en BTN — HJ limpea (bote 2.5bb). GTO: iso-raise a 4-5bb. Sobrelimp con AJs en posición es una seria fuga de EV.',
+  'AJs no BTN — HJ limpa (pot 2.5bb). GTO: iso-raise a 4-5bb. Overlimp com AJs em posição é uma sério fuga de EV.',
+  'BTN面对HJ平跟（底池2.5bb）的AJs。GTO：4-5bb隔离加注。有位置用AJs跟过平跟是严重EV漏洞。加注隔离并在位置上单挑。')},
+{id:'p12',hp:'UTG',vp:null,action:null,amount:null,pot:'1.5bb',
+ hole:[{r:'A',s:'♠'},{r:'A',s:'♣'}],gto:'raise',acts:['fold','call','raise'],ex:mkex(
+  'AA in UTG — first to act (blinds in pot: 1.5bb). GTO: raise to 3bb, always and without exception. Never limp aces. Open-limping AA is the most expensive recreational mistake in poker.',
+  'AA UTG — первый действующий (блайнды 1.5bb в поте). GTO: рейз до 3bb, всегда и без исключений. Никогда не лимп тузов. Лимп AA — самая дорогая рекреативная ошибка в покере.',
+  'AA en UTG — primero en actuar (blinds 1.5bb en bote). GTO: raise a 3bb, siempre y sin excepción. Nunca limpear ases. Limp de AA es el error recreativo más caro en el poker.',
+  'AA no UTG — primeiro a agir (blinds 1.5bb no pot). GTO: raise a 3bb, sempre e sem exceção. Nunca limpar ases.',
+  'UTG AA — 第一个行动（底池中盲注1.5bb）。GTO：加注到3bb，永远如此，无一例外。永远不要平跟A。平跟AA是扑克中最昂贵的休闲玩家错误。')},
+,
+{id:'p13',hp:'BB',vp:'SB',action:'raise',amount:'3bb',pot:'4bb',
+ hole:[{r:'K',s:'♠'},{r:'J',s:'♦'}],gto:'call',acts:['fold','call','raise'],ex:mkex(
+  'KJo in BB vs SB 3bb steal (pot 4bb). GTO: call. KJo is in BB defense range vs SB — SB steals wide so KJo has enough equity. 3-betting is possible but calling is simpler and higher EV vs wide SB range.',
+  'KJo BB против стила SB 3bb (пот 4bb). GTO: колл. KJo в диапазоне защиты BB против SB — SB стилует широко, поэтому у KJo достаточно equity. 3-бет возможен, но колл проще и выше EV.',
+  'KJo en BB vs steal SB 3bb (bote 4bb). GTO: call. KJo está en el rango de defensa del BB vs SB — SB roba amplio por lo que KJo tiene suficiente equity.',
+  'KJo no BB vs steal SB 3bb (pot 4bb). GTO: call. KJo está no range de defesa do BB vs SB — SB rouba amplo então KJo tem equity suficiente.',
+  'BB面对SB 3bb偷盲（底池4bb）的KJo。GTO：跟注。KJo在BB防守范围内——SB偷盲范围宽，KJo有足够权益。')},
+{id:'p14',hp:'BB',vp:'BTN',action:'raise',amount:'2.5bb',pot:'4bb',
+ hole:[{r:'A',s:'♥'},{r:'3',s:'♥'}],gto:'call',acts:['fold','call','raise'],ex:mkex(
+  'A3 hearts in BB vs BTN 2.5bb open (pot 4bb). GTO: call. A3s defends in BB — flush draw potential, nut-low potential, ace blocker. Getting ~3.5:1 pot odds. BTN opens very wide so even A3s is profitable to defend.',
+  'A3 червы BB против открытия BTN 2.5bb (пот 4bb). GTO: колл. A3s защищает в BB — флаш-дро, нат-лоу потенциал, блокер туза. Потовые одсы ~3.5:1. BTN открывает очень широко.',
+  'A3 corazones BB vs apertura BTN 2.5bb (bote 4bb). GTO: call. A3s defiende en BB — flush draw, potencial nut-low, blocker de as. Pot odds ~3.5:1.',
+  'A3 copas BB vs abertura BTN 2.5bb (pot 4bb). GTO: call. A3s defende no BB — flush draw, potencial nut-low, blocker de ás.',
+  'BB面对BTN 2.5bb开牌（底池4bb）的A3红心。GTO：跟注。A3同花在BB防守——同花听牌、坚果低牌潜力、A阻断牌。底池赔率约3.5:1。')},
+{id:'p15',hp:'SB',vp:'BB',action:null,amount:null,pot:'1.5bb',
+ hole:[{r:'Q',s:'♣'},{r:'T',s:'♣'}],gto:'raise',acts:['fold','call','raise'],ex:mkex(
+  'QTs in SB — BB has not acted yet (pot 1.5bb). GTO: raise to 3bb. QTs is a raising hand from SB — strong connectivity, flush draw potential. Completing (call) from SB is weak and gives BB free play. Always raise or fold from SB.',
+  'QTs SB — BB ещё не действовал (пот 1.5bb). GTO: рейз до 3bb. QTs — рейзинг рука с SB — сильная коннектность, флаш-дро. Колл с SB слаб и даёт BB бесплатную игру. С SB всегда рейз или фолд.',
+  'QTs en SB — BB aún no ha actuado (bote 1.5bb). GTO: raise a 3bb. QTs es una mano de raise desde SB — fuerte conectividad, flush draw. Call desde SB es débil y da play gratuito al BB.',
+  'QTs no SB — BB ainda não atuou (pot 1.5bb). GTO: raise a 3bb. QTs é uma mão de raise do SB — forte conectividade, flush draw. Call do SB é fraco e dá play gratuito ao BB.',
+  'SB面对BB还未行动（底池1.5bb）的QTs。GTO：加注到3bb。QTs是SB的加注手牌——强连接性，同花听牌。从SB跟注很弱，给BB免费游戏。从SB永远加注或弃牌。')},
+{id:'p16',hp:'BB',vp:'CO',action:'raise',amount:'2.5bb',pot:'4bb',
+ hole:[{r:'J',s:'♣'},{r:'9',s:'♣'}],gto:'call',acts:['fold','call','raise'],ex:mkex(
+  'J9 clubs in BB vs CO 2.5bb open (pot 4bb). GTO: call. J9s is a solid BB defense — straight draw potential, flush draw, pair equity. CO opens ~27% so J9s has enough equity to defend profitably.',
+  'J9 трефы BB против открытия CO 2.5bb (пот 4bb). GTO: колл. J9s — хорошая защита BB — потенциал стрит-дро, флаш-дро, пара. CO открывает ~27%, поэтому J9s достаточно прибыльна для защиты.',
+  'J9 tréboles BB vs apertura CO 2.5bb (bote 4bb). GTO: call. J9s es sólida defensa del BB — potencial de straight draw, flush draw, equity de par. CO abre ~27%.',
+  'J9 paus BB vs abertura CO 2.5bb (pot 4bb). GTO: call. J9s é sólida defesa do BB — potencial straight draw, flush draw. CO abre ~27%.',
+  'BB面对CO 2.5bb开牌（底池4bb）的J9梅花。GTO：跟注。J9同花是好的BB防守——顺子听牌潜力，同花听牌，对子权益。CO开牌范围约27%。')},
+{id:'p17',hp:'BTN',vp:'SB',action:'3-bet',amount:'9bb',pot:'11.5bb',
+ hole:[{r:'A',s:'♦'},{r:'Q',s:'♦'}],gto:'raise',acts:['fold','call','raise'],ex:mkex(
+  'AQs on BTN facing SB 3-bet to 9bb (pot 11.5bb). GTO: 4-bet or call. AQs is a mixed 4-bet hand — strong enough to 4-bet for value (dominates AJ, KQ, KJ) but can also call in position. 4-betting is slightly higher EV.',
+  'AQs BTN против 3-бета SB до 9bb (пот 11.5bb). GTO: 4-бет или колл. AQs — смешанная 4-бет рука — достаточно сильна для 4-бета (доминирует AJ, KQ, KJ), но можно и коллировать в позиции.',
+  'AQs en BTN vs 3-bet SB a 9bb (bote 11.5bb). GTO: 4-bet o call. AQs es una mano 4-bet mixta — suficientemente fuerte para 4-bet de valor (domina AJ, KQ, KJ).',
+  'AQs no BTN vs 3-bet SB a 9bb (pot 11.5bb). GTO: 4-bet ou call. AQs é uma mão 4-bet mista — forte o suficiente para 4-bet de valor (domina AJ, KQ, KJ).',
+  'BTN面对SB的9bb 3注（底池11.5bb）的AQs。GTO：4注或跟注。AQs是混合4注手牌——足够强到为价值4注（支配AJ、KQ、KJ），也可以有位置跟注。')},
+{id:'p18',hp:'HJ',vp:'CO',action:'3-bet',amount:'9bb',pot:'11.5bb',
+ hole:[{r:'T',s:'♦'},{r:'T',s:'♥'}],gto:'call',acts:['fold','call','raise'],ex:mkex(
+  'TT in HJ facing CO 3-bet to 9bb (pot 11.5bb). GTO: call. TT is a calling hand vs CO 3-bet — too strong to fold, too weak to 4-bet for value. Call in position and aim to flop a set or be overpair on a low board.',
+  'TT HJ против 3-бета CO до 9bb (пот 11.5bb). GTO: колл. TT — колл рука против 3-бета CO — слишком сильна для фолда, слишком слаба для 4-бета для ценности. Колл в позиции и цель флопнуть сет.',
+  'TT en HJ vs 3-bet CO a 9bb (bote 11.5bb). GTO: call. TT es una mano de call vs 3-bet del CO — demasiado fuerte para fold, demasiado débil para 4-bet de valor.',
+  'TT no HJ vs 3-bet CO a 9bb (pot 11.5bb). GTO: call. TT é uma mão de call vs 3-bet do CO — forte demais para fold, fraco demais para 4-bet de valor.',
+  'HJ面对CO的9bb 3注（底池11.5bb）的TT。GTO：跟注。TT是对CO 3注的跟注手牌——太强不能弃牌，太弱不能为价值4注。有位置跟注目标翻出三条。')},
+{id:'p19',hp:'BB',vp:'BTN',action:'raise',amount:'2.5bb',pot:'4bb',
+ hole:[{r:'7',s:'♣'},{r:'6',s:'♣'}],gto:'call',acts:['fold','call','raise'],ex:mkex(
+  '76 clubs in BB vs BTN 2.5bb open (pot 4bb). GTO: call. 76s defends in BB — good connectivity, flush draw, straight draw potential. Getting ~3.5:1 pot odds. BB must defend wide vs BTN or give BTN too high steal frequency.',
+  '76 трефы BB против открытия BTN 2.5bb (пот 4bb). GTO: колл. 76s защищает в BB — хорошая коннектность, флаш-дро, стрит-дро. Потовые одсы ~3.5:1. BB должен широко защищаться против BTN.',
+  '76 tréboles BB vs apertura BTN 2.5bb (bote 4bb). GTO: call. 76s defiende en BB — buena conectividad, flush draw, straight draw. Pot odds ~3.5:1.',
+  '76 paus BB vs abertura BTN 2.5bb (pot 4bb). GTO: call. 76s defende no BB — boa conectividade, flush draw, straight draw.',
+  'BB面对BTN 2.5bb开牌（底池4bb）的76梅花。GTO：跟注。76同花在BB防守——良好连接性，同花听牌，顺子听牌潜力。底池赔率约3.5:1。')},
+{id:'p20',hp:'CO',vp:'HJ',action:'raise',amount:'2.5bb',pot:'4bb',
+ hole:[{r:'K',s:'♦'},{r:'Q',s:'♦'}],gto:'raise',acts:['fold','call','raise'],ex:mkex(
+  'KQd in CO facing HJ 2.5bb open (pot 4bb). GTO: 3-bet or call. KQs is a 3-betting hand from CO vs HJ — builds the pot with a strong hand, folds out some HJ range. Can also flat call and play in position. 3-bet is higher EV.',
+  'KQ бубны CO против открытия HJ 2.5bb (пот 4bb). GTO: 3-бет или колл. KQs — 3-бет рука с CO против HJ — строит пот с сильной рукой, фолдирует часть диапазона HJ. Можно и колл в позиции. 3-бет — выше EV.',
+  'KQ diamantes CO vs apertura HJ 2.5bb (bote 4bb). GTO: 3-bet o call. KQs es una mano de 3-bet desde CO vs HJ — construye el bote con una mano fuerte, foldea parte del rango del HJ.',
+  'KQ ouros CO vs abertura HJ 2.5bb (pot 4bb). GTO: 3-bet ou call. KQs é uma mão de 3-bet do CO vs HJ — constrói o pot com uma mão forte.',
+  'CO面对HJ 2.5bb开牌（底池4bb）的KQ方块。GTO：3注或跟注。KQs是CO对抗HJ的3注手牌——用强牌构建底池，折叠部分HJ范围。也可以有位置跟注。3注EV更高。')},
+];
+
+// ── POSTFLOP ─────────────────────────────────────────────────────
+// Logic verification per scenario:
+// facing=null → hero acts first; facing='bet' → villain bet, hero responds
+// gto: correct action. sz: exact fraction of pot for bet (solver-validated sizing)
+// szO: options shown to user. ip=true means hero has position advantage.
+// For 'facing' scenarios: pot already includes villain's bet.
+const POSTFLOP=[
+// ══ FLOP — hero acts first ══
+{id:'f1',street:'flop',hp:'BTN',vp:'BB',ip:true,facing:null,pot:'6.5bb',
+ hole:[{r:'A',s:'♠'},{r:'K',s:'♥'}],board:[{r:'A',s:'♦'},{r:'7',s:'♣'},{r:'2',s:'♠'}],
+ tex:['dry','rainbow'],made:'Top pair top kicker',gto:'bet',sz:0.33,szO:[0.33,0.5,0.75],ex:mkex(
+  'TPTK on A72 rainbow (dry board). GTO: small bet 33%. On dry boards, bet entire range at small sizing — more profitable than checking. BB has very few strong hands. A72 heavily favors BTN range.',
+  'TPTK на A72 радуга (сухой борд). GTO: маленькая ставка 33%. На сухих бордах бети весь диапазон маленьким сайзингом — прибыльнее чека. У BB очень мало сильных рук. A72 сильно выгоден BTN.',
+  'TPTK en A72 rainbow (board seco). GTO: bet pequeño 33%. En boards secos, apostar todo el rango con tamaño pequeño es más rentable que hacer check. BB tiene muy pocas manos fuertes.',
+  'TPTK no A72 rainbow (board seco). GTO: bet pequeno 33%. Em boards secos, apostar todo o range com tamanho pequeno é mais lucrativo que check.',
+  'A72彩虹（干燥牌面）上的TPTK。GTO：33%小注。干燥牌面上用小尺寸对整个范围下注比过牌更有利可图。BB的强牌很少。')},
+{id:'f2',street:'flop',hp:'BTN',vp:'BB',ip:true,facing:null,pot:'7bb',
+ hole:[{r:'K',s:'♠'},{r:'Q',s:'♠'}],board:[{r:'J',s:'♠'},{r:'T',s:'♦'},{r:'5',s:'♥'}],
+ tex:['wet','connected','oesd'],made:'OESD (8 outs ~32%)',gto:'bet',sz:0.5,szO:[0.33,0.5,0.75],ex:mkex(
+  'KQs on JT5 — open-ended straight draw (8 outs ~32%). GTO: 50% semi-bluff. 8 outs to nut straight — strong draw. BB cannot defend wide enough on this connected board. Even when called, you retain significant equity.',
+  'KQs на JT5 — открытое стрит-дро (8 аутов ~32%). GTO: 50% семи-блаф. 8 аутов к нат-стриту — сильное дро. BB не может достаточно широко защититься на коннектном борде.',
+  'KQs en JT5 — OESD (8 outs ~32%). GTO: semi-bluff 50%. 8 outs al straight nut — draw fuerte. BB no puede defender suficientemente ancho en este board conectado.',
+  'KQs no JT5 — OESD (8 outs ~32%). GTO: semi-bluff 50%. 8 outs para o straight nut — draw forte. BB não pode defender suficientemente amplo.',
+  'JT5上的KQs — 开放式两端顺子听牌（8张出路~32%）。GTO：50%半诈唬。8张牌可以听坚果顺子——强力听牌。BB无法在这个连接牌面上足够宽地防守。')},
+{id:'f3',street:'flop',hp:'BTN',vp:'BB',ip:true,facing:null,pot:'6.5bb',
+ hole:[{r:'9',s:'♠'},{r:'8',s:'♠'}],board:[{r:'A',s:'♥'},{r:'K',s:'♦'},{r:'2',s:'♣'}],
+ tex:['dry','highboard'],made:'Air — no equity',gto:'check',sz:null,szO:[],ex:mkex(
+  '98s on AK2 rainbow — pure air, no equity. GTO: check. AK2r board favors BB heavily (many Ax and Kx). Your 98 has no fold equity for a bluff and no equity when called. Take the free turn card.',
+  '98s на AK2 радуга — чистый воздух, нет equity. GTO: чек. Борд AK2r сильно выгоден BB (много Ax и Kx). Нет fold equity для блафа и нет equity при колле. Возьми бесплатную карту терна.',
+  '98s en AK2 rainbow — aire puro, sin equity. GTO: check. AK2r favorece mucho al BB (muchos Ax y Kx). Sin fold equity para bluff y sin equity si es llamado.',
+  '98s no AK2 rainbow — ar puro, sem equity. GTO: check. AK2r favorece muito o BB (muitos Ax e Kx). Sem fold equity para bleff e sem equity se chamado.',
+  'AK2彩虹上的98s — 纯空气，无权益。GTO：过牌。AK2r牌面大幅有利于BB（很多Ax和Kx）。无弃牌权益诈唬，被跟注时无权益。取免费转牌。')},
+{id:'f4',street:'flop',hp:'CO',vp:'BB',ip:true,facing:null,pot:'7bb',
+ hole:[{r:'T',s:'♦'},{r:'T',s:'♥'}],board:[{r:'8',s:'♠'},{r:'3',s:'♦'},{r:'2',s:'♣'}],
+ tex:['dry','lowboard'],made:'Overpair TT',gto:'bet',sz:0.33,szO:[0.33,0.5,0.75],ex:mkex(
+  'TT overpair on 832 rainbow (dry low board). GTO: 33% small bet — bet entire range. Extracts value from BB pairs and draws while keeping all bluffs. BB rarely has 88/33/22, so you rarely face better hands.',
+  'TT оверпара на 832 радуга (сухой низкий борд). GTO: 33% маленькая ставка — бети весь диапазон. Извлекает ценность от пар и дро BB. BB редко имеет 88/33/22.',
+  'TT overpair en 832 rainbow (board seco y bajo). GTO: bet 33% pequeño — apostar todo el rango. Extrae valor de pares y draws del BB. BB raramente tiene 88/33/22.',
+  'TT overpair no 832 rainbow (board seco e baixo). GTO: bet 33% pequeno — apostar todo o range. Extrai valor de pares e draws do BB.',
+  '832彩虹上的TT超对（干燥低牌面）。GTO：33%小注——对整个范围下注。从BB的对子和听牌中提取价值。BB很少有88/33/22。')},
+{id:'f5',street:'flop',hp:'BTN',vp:'BB',ip:true,facing:null,pot:'8bb',
+ hole:[{r:'A',s:'♠'},{r:'2',s:'♠'}],board:[{r:'K',s:'♠'},{r:'9',s:'♠'},{r:'3',s:'♦'}],
+ tex:['wet','flushdraw'],made:'Nut flush draw (9 outs ~35%)',gto:'bet',sz:0.75,szO:[0.5,0.75,1.0],ex:mkex(
+  'A2s nut flush draw on K93. GTO: 75% bet. Nut flush draws (9 outs ~35%) warrant larger sizing — you want fold equity now and a bigger pot when you hit. Ace also blocks AA/AK, improving bluff equity.',
+  'A2s нат-флаш дро на K93. GTO: 75% ставка. Нат-флаш дро (9 аутов ~35%) требует большего сайзинга — fold equity сейчас и больший пот при попадании. Туз блокирует AA/AK.',
+  'A2s nut flush draw en K93. GTO: bet 75%. Draws nut flush requieren tamaño grande — fold equity ahora y un pot mayor cuando completes. El as bloquea AA/AK.',
+  'A2s nut flush draw no K93. GTO: bet 75%. Draws nut flush requerem tamanho grande — fold equity agora e um pot maior quando completar.',
+  'K93上的A2s坚果同花听牌。GTO：75%下注。坚果同花听牌需要大尺寸——现在要弃牌权益，命中时要更大底池。A还阻断AA/AK。')},
+{id:'f6',street:'flop',hp:'BB',vp:'BTN',ip:false,facing:null,pot:'7bb',
+ hole:[{r:'Q',s:'♥'},{r:'J',s:'♦'}],board:[{r:'Q',s:'♠'},{r:'7',s:'♦'},{r:'2',s:'♣'}],
+ tex:['dry','toppair'],made:'Top pair medium kicker OOP',gto:'check',sz:null,szO:[],ex:mkex(
+  'QJ OOP on Q72 rainbow — top pair medium kicker. GTO: check-call. Do not lead TPMK OOP — it belongs in check-call range. BTN will c-bet with worse (KJ, JT, air). Leading risks getting raised off your equity.',
+  'QJ вне позиции на Q72 радуга — топ пара средний кикер. GTO: чек-колл. Не лидируй с TPMK OOP — это в чек-колл диапазоне. BTN ставит продолжение со многими более слабыми руками.',
+  'QJ OOP en Q72 rainbow — TPMK. GTO: check-call. No lides TPMK OOP — está en el rango check-call. BTN hará c-bet con manos peores (KJ, JT, aire).',
+  'QJ OOP no Q72 rainbow — TPMK. GTO: check-call. Não lides TPMK OOP — está no range check-call. BTN fará c-bet com mãos piores.',
+  'Q72彩虹OOP上的QJ — 顶对中等踢脚牌。GTO：过牌跟注。不要在OOP领注TPMK——这在过牌跟注范围内。BTN会用更弱的牌（KJ、JT、空气）跟注下注。')},
+{id:'f7',street:'flop',hp:'CO',vp:'BB',ip:true,facing:null,pot:'8bb',
+ hole:[{r:'J',s:'♦'},{r:'J',s:'♣'}],board:[{r:'J',s:'♠'},{r:'8',s:'♥'},{r:'3',s:'♦'}],
+ tex:['dry','trips'],made:'Top set JJJ',gto:'check',sz:null,szO:[],ex:mkex(
+  'JJ top set on J83 rainbow. GTO: slow-play with a check. On dry boards, sets check to let opponent bluff or catch up. If you bet, BB folds most of his range immediately. Checking keeps all his bluffs alive for more streets.',
+  'JJ топ-сет на J83 радуга. GTO: слоу-плей чеком. На сухих бордах сеты чекуют чтобы дать сопернику блафовать или поймать карту. Ставка немедленно фолдирует большую часть диапазона BB.',
+  'JJ top set en J83 rainbow. GTO: slow-play con check. En boards secos, los sets hacen check para dejar al oponente bluffear. Si apuestas, BB foldea la mayoría inmediatamente.',
+  'JJ top set no J83 rainbow. GTO: slow-play com check. Em boards secos, sets fazem check para o oponente blefar. Se apostas, BB folda a maioria imediatamente.',
+  'J83彩虹上的JJ顶三条。GTO：过牌慢打。干燥牌面上三条过牌让对手诈唬或接牌。如果下注，BB会立即弃掉大部分范围。')},
+{id:'f8',street:'flop',hp:'BTN',vp:'BB',ip:true,facing:null,pot:'7bb',
+ hole:[{r:'5',s:'♥'},{r:'4',s:'♥'}],board:[{r:'6',s:'♥'},{r:'3',s:'♦'},{r:'2',s:'♣'}],
+ tex:['wet','connected'],made:'Straight (2-6)',gto:'bet',sz:0.5,szO:[0.33,0.5,0.75],ex:mkex(
+  '54 — straight on 632. Wet connected board. GTO: bet 50% to protect and build value. Turn can bring cards completing opponent draws (4, 5, 7) — charge them now while your straight is best.',
+  '54 — стрит на 632. Мокрый коннектный борд. GTO: ставка 50% для защиты и построения ценности. Терн может принести карты, закрывающие дро соперника (4, 5, 7).',
+  '54 — straight en 632. Board wet y conectado. GTO: bet 50% para proteger y construir valor. El turn puede traer cartas que completan draws del oponente (4, 5, 7).',
+  '54 — straight no 632. Board wet e conectado. GTO: bet 50% para proteger e construir valor. O turn pode trazer cartas que completam draws do oponente.',
+  '632上的54顺子。湿润连接牌面。GTO：50%下注保护和构建价值。转牌可能带来完成对手听牌的牌（4、5、7）——趁现在顺子最强时收费。')},
+{id:'f9',street:'flop',hp:'BTN',vp:'SB',ip:true,facing:null,pot:'9bb',
+ hole:[{r:'K',s:'♦'},{r:'K',s:'♣'}],board:[{r:'A',s:'♠'},{r:'7',s:'♥'},{r:'3',s:'♦'}],
+ tex:['dry','overcard'],made:'Overpair KK — ace on board',gto:'check',sz:null,szO:[],ex:mkex(
+  'KK on A73 — ace on board. GTO: check. The ace hits SB range harder than yours. Betting charges only better hands (Ax). Check for pot control and re-evaluate on turn. If SB checks back: consider delayed c-bet turn.',
+  'KK на A73 — туз на борде. GTO: чек. Туз попадает в диапазон SB сильнее чем в твой. Ставка платит только лучшим рукам (Ax). Чекай для pot control и переоценки на терне.',
+  'KK en A73 — as en el board. GTO: check. El as golpea el rango del SB más que el tuyo. Apostar solo cobra a las mejores manos (Ax). Check para pot control.',
+  'KK no A73 — ás no board. GTO: check. O ás golpeia o range do SB mais que o teu. Apostar só cobra às melhores mãos (Ax).',
+  'A73上的KK——牌面有A。GTO：过牌。A比你更有力地打击SB范围。下注只给更好的手牌（Ax）收费。过牌控制底池。')},
+// ══ FLOP — facing bet ══
+{id:'f10',street:'flop',hp:'BB',vp:'BTN',ip:false,facing:'bet',facingS:'4bb',pot:'13bb',
+ hole:[{r:'A',s:'♣'},{r:'K',s:'♦'}],board:[{r:'A',s:'♥'},{r:'8',s:'♠'},{r:'3',s:'♦'}],
+ tex:['dry','toppair'],made:'TPTK facing c-bet',gto:'call',sz:null,szO:[],ex:mkex(
+  'AK — TPTK facing BTN 33% c-bet on A83r (pot 13bb). GTO: call. TPTK is in check-call range — raising charges only better hands (sets, two-pair). Calling keeps BTN bluffing. On turn: lead or check-raise for value.',
+  'AK — TPTK против 33% c-бета BTN на A83r (пот 13bb). GTO: колл. TPTK в чек-колл диапазоне — рейз платит только лучшим рукам (сеты, две пары). Коллом оставляешь BTN блафовать.',
+  'AK — TPTK vs c-bet 33% BTN en A83r (bote 13bb). GTO: call. TPTK está en el rango check-call — raise solo cobra a manos mejores (sets, dos pares).',
+  'AK — TPTK vs c-bet 33% BTN no A83r (pot 13bb). GTO: call. TPTK está no range check-call — raise só cobra de mãos melhores (sets, dois pares).',
+  'A83r上AK（TPTK）面对BTN的33% c-注（底池13bb）。GTO：跟注。TPTK在过牌跟注范围——加注只给更好手牌（三条、两对）收费。跟注让BTN继续诈唬。')},
+{id:'f11',street:'flop',hp:'BTN',vp:'CO',ip:true,facing:'bet',facingS:'7.5bb',pot:'15bb',
+ hole:[{r:'A',s:'♥'},{r:'J',s:'♠'}],board:[{r:'A',s:'♦'},{r:'J',s:'♥'},{r:'5',s:'♣'}],
+ tex:['dry','toppair'],made:'Two pair AJ',gto:'raise',sz:null,szO:[],ex:mkex(
+  'AJ two pair on AJ5 — CO donk bets 50% (pot 15bb). GTO: raise to ~2.3x. Two pair wants to build the pot now before a dangerous turn card falls. CO may have AK/AQ (TPTK) which will continue. Never just call two pair here.',
+  'AJ две пары на AJ5 — CO делает донк-бет 50% (пот 15bb). GTO: рейз до ~2.3x. Две пары хотят строить пот до опасной карты терна. CO может иметь AK/AQ (TPTK), которые продолжат.',
+  'AJ dos pares en AJ5 — CO hace donk-bet 50% (bote 15bb). GTO: raise a ~2.3x. Dos pares quiere construir el bote antes de una carta peligrosa en el turn. CO puede tener AK/AQ que continuará.',
+  'AJ dois pares no AJ5 — CO faz donk-bet 50% (pot 15bb). GTO: raise a ~2.3x. Dois pares quer construir o pot antes de uma carta perigosa no turn.',
+  'AJ5上的AJ两对——CO主动下注50%（底池15bb）。GTO：加注约2.3倍。两对想在危险转牌落下前构建底池。CO可能有AK/AQ（TPTK）会继续。')},
+{id:'f12',street:'flop',hp:'BB',vp:'CO',ip:false,facing:'bet',facingS:'6bb',pot:'12bb',
+ hole:[{r:'T',s:'♦'},{r:'9',s:'♦'}],board:[{r:'8',s:'♦'},{r:'7',s:'♣'},{r:'2',s:'♥'}],
+ tex:['wet','oesd'],made:'OESD + backdoor FD',gto:'raise',sz:null,szO:[],ex:mkex(
+  'T9d on 872 — OESD (8 outs ~32%) + backdoor flush draw. CO bets 50% (pot 12bb). GTO: check-raise! Strong semi-bluff with fold equity. CO cannot call wide vs BB check-raise with speculative holdings.',
+  'T9 бубны на 872 — OESD (8 аутов ~32%) + backdoor флаш-дро. CO бетит 50% (пот 12bb). GTO: чек-рейз! Сильный семи-блаф с fold equity. CO не может широко коллировать чек-рейз.',
+  'T9 cuadros en 872 — OESD (8 outs ~32%) + backdoor FD. CO apuesta 50% (bote 12bb). GTO: check-raise! Semi-bluff fuerte con fold equity.',
+  'T9 ouros no 872 — OESD (8 outs ~32%) + backdoor FD. CO aposta 50% (pot 12bb). GTO: check-raise! Semi-bluff forte com fold equity.',
+  '872上的T9方块——OESD（8张出路~32%）+ 后门同花听牌。CO下注50%（底池12bb）。GTO：过牌加注！强力半诈唬配合弃牌权益。')},
+{id:'f13',street:'flop',hp:'SB',vp:'BTN',ip:false,facing:'bet',facingS:'5bb',pot:'10bb',
+ hole:[{r:'K',s:'♣'},{r:'K',s:'♦'}],board:[{r:'K',s:'♠'},{r:'9',s:'♥'},{r:'4',s:'♦'}],
+ tex:['dry','trips'],made:'Top set KKK',gto:'call',sz:null,szO:[],ex:mkex(
+  'KK top set on K94 rainbow — BTN c-bets 50% (pot 10bb). GTO: flat call (slow-play). Top set on dry board: calling lets BTN keep bluffing and protects your range. Raising folds all bluffs immediately. Build on later streets.',
+  'KK топ-сет на K94 радуга — BTN делает c-бет 50% (пот 10bb). GTO: флет-колл (слоу-плей). Топ-сет на сухом борде: колл позволяет BTN продолжать блафовать. Рейз немедленно фолдирует все блафы.',
+  'KK top set en K94 rainbow — BTN c-bet 50% (bote 10bb). GTO: flat call (slow-play). Top set en board seco: call deja a BTN seguir bluffeando. Raise foldea todos los bluffs inmediatamente.',
+  'KK top set no K94 rainbow — BTN c-bet 50% (pot 10bb). GTO: flat call (slow-play). Top set em board seco: call deixa BTN continuar blefando.',
+  'K94彩虹上的KK顶三条——BTN跟注下注50%（底池10bb）。GTO：平跟（慢打）。干燥牌面顶三条：平跟让BTN继续诈唬，加注会立即折叠所有诈唬。')},
+// ══ TURN — hero acts first ══
+{id:'t1',street:'turn',hp:'BTN',vp:'BB',ip:true,facing:null,pot:'13bb',
+ hole:[{r:'A',s:'♠'},{r:'K',s:'♦'}],board:[{r:'A',s:'♥'},{r:'7',s:'♣'},{r:'2',s:'♦'},{r:'5',s:'♠'}],
+ tex:['dry','toppair'],made:'TPTK — turn',gto:'bet',sz:0.75,szO:[0.5,0.75,1.0],ex:mkex(
+  'TPTK on turn A725. GTO: 75% bet. Turn sizing increases vs flop — BB may now have 34 (straight!), 55, 77, 22. Larger turn bet provides protection from draws and two-pair hands that may have caught up.',
+  'TPTK на терне A725. GTO: 75% ставка. Сайзинг терна увеличивается — BB может иметь 34 (стрит!), 55, 77, 22. Большая ставка терна защищает от дро и рук, которые могли улучшиться.',
+  'TPTK en turn A725. GTO: bet 75%. BB puede tener 34 (straight!), 55, 77, 22. Una apuesta mayor en el turn protege de draws y manos que se mejoraron.',
+  'TPTK no turn A725. GTO: bet 75%. BB pode ter 34 (straight!), 55, 77, 22. Uma aposta maior no turn protege de draws e mãos que melhoraram.',
+  '转牌A725上的TPTK。GTO：75%下注。转牌尺寸比翻牌大——BB可能有34（顺子！）、55、77、22。更大的转牌下注防止听牌和两对。')},
+{id:'t2',street:'turn',hp:'BTN',vp:'BB',ip:true,facing:null,pot:'14bb',
+ hole:[{r:'K',s:'♠'},{r:'Q',s:'♠'}],board:[{r:'J',s:'♠'},{r:'T',s:'♦'},{r:'5',s:'♥'},{r:'2',s:'♠'}],
+ tex:['wet','flushdraw'],made:'OESD + flush draw (15 outs ~60%)',gto:'bet',sz:0.75,szO:[0.5,0.75,1.0],ex:mkex(
+  'KQs — OESD on flop, turn adds flush draw = 15 outs (~60% equity). GTO: bet 75-100% — massive semi-bluff. With 15 outs you are a slight favourite to improve. Checking surrenders enormous fold equity.',
+  'KQs — OESD на флопе, терн добавляет флаш-дро = 15 аутов (~60% equity). GTO: 75-100% ставка — массивный семи-блаф. С 15 аутами ты лёгкий фаворит. Чек уступает огромный fold equity.',
+  'KQs — OESD en flop, turn añade flush draw = 15 outs (~60% equity). GTO: bet 75-100% — semi-bluff masivo. Con 15 outs eres ligero favorito. Check cede enorme fold equity.',
+  'KQs — OESD no flop, turn adiciona flush draw = 15 outs (~60% equity). GTO: bet 75-100% — semi-bluff massivo.',
+  'KQs——翻牌OESD，转牌增加同花听牌=15张出路（~60%权益）。GTO：75-100%大规模半诈唬。15张出路你是轻微有利方。过牌放弃巨大的弃牌权益。')},
+{id:'t3',street:'turn',hp:'CO',vp:'BB',ip:true,facing:null,pot:'12bb',
+ hole:[{r:'J',s:'♥'},{r:'J',s:'♣'}],board:[{r:'A',s:'♠'},{r:'9',s:'♦'},{r:'3',s:'♣'},{r:'K',s:'♥'}],
+ tex:['highboard'],made:'Underpair — two overcards on turn',gto:'check',sz:null,szO:[],ex:mkex(
+  'JJ on A93K — two overcards on turn. GTO: check back. No equity to bluff (BB calls with any A, K, or pair). No value vs calling range (only better hands call). Free showdown is highest EV here.',
+  'JJ на A93K — две оверкарты на терне. GTO: чек назад. Нет equity для блафа (BB коллирует с любым A, K или парой). Нет ценности против колл-диапазона. Бесплатный шоудаун — высший EV.',
+  'JJ en A93K — dos overcards en turn. GTO: check back. Sin equity para bluff (BB llama con cualquier A, K o par). Sin valor vs rango de call. Showdown gratuito es el mayor EV.',
+  'JJ no A93K — dois overcards no turn. GTO: check back. Sem equity para bleff (BB chama com qualquer A, K ou par). Sem valor vs range de call.',
+  'A93K上的JJ——转牌有两张超牌。GTO：过牌。没有权益诈唬（BB会用任何A、K或对子跟注）。对阵跟注范围无价值。免费摊牌是最高EV。')},
+{id:'t4',street:'turn',hp:'BB',vp:'BTN',ip:false,facing:null,pot:'14bb',
+ hole:[{r:'9',s:'♦'},{r:'8',s:'♦'}],board:[{r:'T',s:'♦'},{r:'7',s:'♠'},{r:'3',s:'♣'},{r:'6',s:'♦'}],
+ tex:['wet','straight','flushdraw'],made:'Nut straight + flush draw OOP',gto:'bet',sz:1.0,szO:[0.75,1.0],ex:mkex(
+  '98d — nut straight (6789T) + flush draw OOP. GTO: donk bet pot (100%). With nut-nut OOP, leading large is correct. You want BTN to call with weaker hands or raise as bluff, giving additional chips.',
+  '98 бубны — нат-стрит (6789T) + флаш-дро вне позиции. GTO: донк-бет пот (100%). С нат-нат OOP лидировать крупной ставкой правильно.',
+  '98 diamantes — nut straight (6789T) + flush draw OOP. GTO: donk bet pot (100%). Con nut-nut OOP, apostar grande es correcto.',
+  '98 ouros — nut straight (6789T) + flush draw OOP. GTO: donk bet pot (100%). Com nut-nut OOP, apostar grande é correto.',
+  '98方块——坚果顺子（6789T）+ 同花听牌OOP。GTO：锅注领注（100%）。坚果-坚果OOP大注领注是正确的。')},
+{id:'t5',street:'turn',hp:'BTN',vp:'CO',ip:true,facing:null,pot:'12bb',
+ hole:[{r:'Q',s:'♠'},{r:'Q',s:'♥'}],board:[{r:'9',s:'♠'},{r:'6',s:'♦'},{r:'2',s:'♣'},{r:'Q',s:'♦'}],
+ tex:['trips'],made:'Top set QQ on turn',gto:'bet',sz:0.5,szO:[0.33,0.5,0.75],ex:mkex(
+  'QQ top set on turn (Q962). Start extracting value. CO may have 99/66 (full house draw) or Q-x hands. GTO: 50% bet — builds pot for river without folding all bluffs. Raise if CO has been aggressive.',
+  'QQ топ-сет на терне (Q962). Начинай извлекать ценность. CO может иметь 99/66 (фул-хаус дро) или Q-x руки. GTO: 50% ставка — строит пот к риверу не фолдируя все блафы.',
+  'QQ top set en turn (Q962). CO puede tener 99/66 (draw full house) o manos Q-x. GTO: bet 50% — construye pot para el river sin foldear todos los bluffs.',
+  'QQ top set no turn (Q962). CO pode ter 99/66 (draw full house) ou mãos Q-x. GTO: bet 50% — constrói pot para o river.',
+  'QQ在转牌（Q962）顶三条。开始提取价值。CO可能有99/66（葫芦听牌）或Q-x手牌。GTO：50%下注——构建底池到河牌，不折叠所有诈唬。')},
+// ══ TURN — facing bet ══
+{id:'t6',street:'turn',hp:'BB',vp:'BTN',ip:false,facing:'bet',facingS:'15bb',pot:'20bb',
+ hole:[{r:'A',s:'♠'},{r:'A',s:'♥'}],board:[{r:'K',s:'♦'},{r:'7',s:'♣'},{r:'2',s:'♠'},{r:'9',s:'♥'}],
+ tex:['dry'],made:'AA — top overpair facing turn bet',gto:'raise',sz:null,szO:[],ex:mkex(
+  'AA vs BTN 75% turn bet on K729r (pot 20bb). GTO: raise! AA is the top overpair — build a big pot. BTN range has Kx, J9, 97, draws. Raise extracts max from worse hands and charges draws. Calling OOP surrenders initiative.',
+  'AA против 75% ставки BTN на терне K729r (пот 20bb). GTO: рейз! AA — топ оверпара — строй большой пот. Рейз извлекает максимум от более слабых рук и платит за дро.',
+  'AA vs bet 75% BTN en turn K729r (bote 20bb). GTO: raise! AA es la overpair más alta — construye un gran bote. El rango del BTN tiene Kx, J9, 97, draws.',
+  'AA vs bet 75% BTN no turn K729r (pot 20bb). GTO: raise! AA é a overpair mais alta — constrói um grande pot.',
+  'AA面对BTN在转牌K729r上的75%下注（底池20bb）。GTO：加注！AA是最高超对——构建大底池。BTN范围有Kx、J9、97、听牌。')},
+{id:'t7',street:'turn',hp:'SB',vp:'BTN',ip:false,facing:'bet',facingS:'9bb',pot:'18bb',
+ hole:[{r:'J',s:'♠'},{r:'T',s:'♠'}],board:[{r:'Q',s:'♠'},{r:'9',s:'♥'},{r:'3',s:'♣'},{r:'2',s:'♠'}],
+ tex:['wet','flushdraw','oesd'],made:'OESD + flush draw — facing bet',gto:'raise',sz:null,szO:[],ex:mkex(
+  'JTs — OESD (8 outs) + flush draw (9 outs) = 15 outs (~60%) vs BTN 50% turn bet (pot 18bb). GTO: semi-bluff raise! 15 outs makes you favourite to improve. Raise collects fold equity now and equity does the rest if called.',
+  'JTs — OESD (8 аутов) + флаш-дро (9 аутов) = 15 аутов (~60%) против 50% ставки BTN на терне (пот 18bb). GTO: семи-блаф рейз! 15 аутов делают тебя фаворитом на улучшение.',
+  'JTs — OESD (8 outs) + flush draw (9 outs) = 15 outs (~60%) vs bet 50% BTN en turn (bote 18bb). GTO: semi-bluff raise! 15 outs te hace favorito para mejorar.',
+  'JTs — OESD (8 outs) + flush draw (9 outs) = 15 outs (~60%) vs bet 50% BTN no turn (pot 18bb). GTO: semi-bluff raise!',
+  'JTs——OESD（8张出路）+ 同花听牌（9张出路）= 15张出路（~60%）对BTN转牌50%下注（底池18bb）。GTO：半诈唬加注！15张出路让你成为改善的有利方。')},
+{id:'t8',street:'turn',hp:'CO',vp:'BB',ip:true,facing:'bet',facingS:'12bb',pot:'24bb',
+ hole:[{r:'Q',s:'♠'},{r:'Q',s:'♥'}],board:[{r:'9',s:'♠'},{r:'6',s:'♦'},{r:'2',s:'♣'},{r:'Q',s:'♦'}],
+ tex:['trips'],made:'Top set QQ — facing donk bet',gto:'raise',sz:null,szO:[],ex:mkex(
+  'QQ top set on turn — BB donk bets 50% (pot 24bb). GTO: raise to ~2.5x! You have the best hand. BB may have 99/66/22 (full house draws) or two-pair hands that will continue. Must-raise situation.',
+  'QQ топ-сет на терне — BB делает донк-бет 50% (пот 24bb). GTO: рейз до ~2.5x! Лучшая рука. BB может иметь 99/66/22 (фул-хаус дро) или две пары, которые продолжат.',
+  'QQ top set en turn — BB hace donk-bet 50% (bote 24bb). GTO: raise a ~2.5x! Mejor mano. BB puede tener 99/66/22 (draws full house) o dos pares que continuarán.',
+  'QQ top set no turn — BB faz donk-bet 50% (pot 24bb). GTO: raise a ~2.5x! Melhor mão. BB pode ter 99/66/22 (draws full house) ou dois pares que continuarão.',
+  '转牌QQ顶三条——BB主动下注50%（底池24bb）。GTO：加注约2.5倍！你有最好的手牌。BB可能有99/66/22（葫芦听牌）或两对会继续。必须加注。')},
+{id:'t9',street:'turn',hp:'BB',vp:'BTN',ip:false,facing:'bet',facingS:'15bb',pot:'28bb',
+ hole:[{r:'J',s:'♣'},{r:'8',s:'♣'}],board:[{r:'T',s:'♣'},{r:'9',s:'♦'},{r:'6',s:'♠'},{r:'2',s:'♣'}],
+ tex:['wet','straight','flushdraw'],made:'Straight + nut flush draw',gto:'raise',sz:null,szO:[],ex:mkex(
+  'J8 clubs — straight (6789T) + nut flush draw. BTN bets 50% on turn (pot 28bb). GTO: raise! Monster — made straight with nut flush redraw to the nuts. Raising charges draws and builds a huge pot. If called, you remain favourite.',
+  'J8 трефы — стрит (6789T) + нат флаш-дро. BTN бетит 50% на терне (пот 28bb). GTO: рейз! Монстровая рука — готовый стрит + нат флаш-редро. Рейз строит огромный пот.',
+  'J8 de tréboles — straight (6789T) + nut flush draw. BTN apuesta 50% en turn (bote 28bb). GTO: raise! Mano monstruo — straight hecho + redraw al flush nut.',
+  'J8 de paus — straight (6789T) + nut flush draw. BTN aposta 50% no turn (pot 28bb). GTO: raise! Mão monstro — straight feito + redraw ao flush nut.',
+  'J8梅花——顺子（6789T）+ 坚果同花听牌。BTN在转牌下注50%（底池28bb）。GTO：加注！怪物手牌——已成顺子加坚果同花重听。加注构建巨大底池。')},
+// ══ RIVER — hero acts first ══
+{id:'r1',street:'river',hp:'BTN',vp:'BB',ip:true,facing:null,pot:'14bb',
+ hole:[{r:'A',s:'♠'},{r:'K',s:'♥'}],board:[{r:'A',s:'♦'},{r:'7',s:'♣'},{r:'2',s:'♠'},{r:'5',s:'♦'},{r:'J',s:'♥'}],
+ tex:['rainbow','toppair'],made:'TPTK — river value',gto:'bet',sz:0.75,szO:[0.5,0.75,1.0],ex:mkex(
+  'TPTK river A7253J. J did not complete obvious draws. GTO: 75% value bet. River bets must be polarized — bet strong hands and pure bluffs, check marginal hands. TPTK is strong enough for river value.',
+  'TPTK ривер A7253J. J не закрыл никаких очевидных дро. GTO: 75% ценностная ставка. Ставки ривера должны быть поляризованными — бети сильные руки и чистые блафы, чекай маргинальные.',
+  'TPTK river A7253J. J no completó draws obvios. GTO: bet valor 75%. Las apuestas del river deben ser polarizadas — apuesta manos fuertes y bluffs puros, check manos marginales.',
+  'TPTK river A7253J. J não completou draws óbvios. GTO: bet valor 75%. Apostas do river devem ser polarizadas.',
+  '河牌A7253J上的TPTK。J没有完成明显听牌。GTO：75%价值下注。河牌下注必须两极化——用强牌和纯诈唬下注，用边际牌过牌。')},
+{id:'r2',street:'river',hp:'BTN',vp:'BB',ip:true,facing:null,pot:'12bb',
+ hole:[{r:'9',s:'♣'},{r:'8',s:'♣'}],board:[{r:'J',s:'♠'},{r:'T',s:'♦'},{r:'5',s:'♥'},{r:'2',s:'♣'},{r:'A',s:'♦'}],
+ tex:['missed'],made:'Missed OESD — river bluff',gto:'bet',sz:0.75,szO:[0.5,0.75,1.0],ex:mkex(
+  '98 missed OESD, ace on river. Zero showdown value. GTO: bluff ~35% frequency. Only way to win is to bluff. Ace lets you represent AJ/AT in your BTN range. 75% sizing forces BB to fold pairs and weak hands.',
+  '98 промазали OESD, туз на ривере. Нулевая showdown value. GTO: блаф ~35%. Единственный способ выиграть — блафовать. Туз позволяет представлять AJ/AT в диапазоне BTN.',
+  '98 falla OESD, as en river. Cero showdown value. GTO: bluff ~35%. La única forma de ganar es bluffear. El as permite representar AJ/AT en tu rango BTN.',
+  '98 falha OESD, ás no river. Zero showdown value. GTO: bluff ~35%. A única forma de ganhar é blefar.',
+  '98错过OESD，河牌出现A。零摊牌价值。GTO：约35%频率诈唬。唯一赢的方法是诈唬。A让你代表BTN范围中的AJ/AT。')},
+{id:'r3',street:'river',hp:'BB',vp:'BTN',ip:false,facing:null,pot:'16bb',
+ hole:[{r:'A',s:'♥'},{r:'5',s:'♥'}],board:[{r:'K',s:'♥'},{r:'7',s:'♥'},{r:'2',s:'♣'},{r:'J',s:'♠'},{r:'4',s:'♥'}],
+ tex:['flush'],made:'Nut flush OOP',gto:'bet',sz:1.0,szO:[0.75,1.0],ex:mkex(
+  'A5h — nut flush on river OOP. GTO: donk bet pot. With nut hand OOP on river, leading for maximum value is correct. BTN should call with non-nut flushes (K-high, Q-high). Never check-call the nuts OOP on river.',
+  'A5 червы — нат-флаш на ривере вне позиции. GTO: донк-бет пот. С нат-рукой OOP на ривере правильно лидировать для максимальной ценности.',
+  'A5 de corazones — nut flush en river OOP. GTO: donk bet pot. Con la mano nut OOP en el river, lidear para máximo valor es correcto.',
+  'A5 de copas — nut flush no river OOP. GTO: donk bet pot. Com a mão nut OOP no river, lidear pelo máximo valor é correto.',
+  'A5红心——河牌OOP坚果同花。GTO：锅注领注。坚果牌OOP在河牌领注取最大价值是正确的。永远不要在河牌OOP过牌跟注坚果牌。')},
+{id:'r4',street:'river',hp:'BTN',vp:'BB',ip:true,facing:null,pot:'14bb',
+ hole:[{r:'T',s:'♦'},{r:'T',s:'♥'}],board:[{r:'A',s:'♠'},{r:'K',s:'♣'},{r:'9',s:'♦'},{r:'7',s:'♠'},{r:'2',s:'♥'}],
+ tex:['highboard'],made:'Underpair — no value, no fold equity',gto:'check',sz:null,szO:[],ex:mkex(
+  'TT on AK972 river — underpair. GTO: check. No fold equity (BB will not fold pairs/Ax to any bet), no value vs calling range (only called by better). Checking with showdown-able hand is higher EV than bluffing.',
+  'TT на AK972 ривере — оверпара (андерпара). GTO: чек. Нет fold equity (BB не фолдирует пары/Ax), нет ценности против колл-диапазона. Чек с шоудаун-able рукой имеет более высокий EV.',
+  'TT en AK972 river — underpair. GTO: check. Sin fold equity (BB no foldea pares/Ax), sin valor vs rango de call. Check con mano showdown-able tiene mayor EV que bluffear.',
+  'TT no AK972 river — underpair. GTO: check. Sem fold equity (BB não folda pares/Ax), sem valor vs range de call.',
+  'AK972河牌上的TT——欠对。GTO：过牌。没有弃牌权益（BB不会对任何下注弃牌对子/Ax），对跟注范围无价值。有摊牌价值的手牌过牌比诈唬EV更高。')},
+{id:'r5',street:'river',hp:'BTN',vp:'BB',ip:true,facing:null,pot:'13bb',
+ hole:[{r:'6',s:'♣'},{r:'5',s:'♣'}],board:[{r:'A',s:'♦'},{r:'K',s:'♠'},{r:'Q',s:'♥'},{r:'J',s:'♦'},{r:'4',s:'♣'}],
+ tex:['highboard','missed'],made:'Air — AKQJ bluff opportunity',gto:'bet',sz:0.75,szO:[0.5,0.75,1.0],ex:mkex(
+  '65 on AKQJ4 — pure air, zero showdown value. GTO: bluff. AKQJ board lets you represent AT or KT (straight) in BTN range. BB cannot defend wide. 75% bet forces folds from pairs and missed draws.',
+  '65 на AKQJ4 — чистый воздух, нулевая showdown value. GTO: блаф. Борд AKQJ позволяет представлять AT или KT (стрит) в диапазоне BTN. BB не может широко защититься.',
+  '65 en AKQJ4 — aire puro, cero showdown value. GTO: bluff. AKQJ permite representar AT o KT (straight) en tu rango BTN. BB no puede defender amplio.',
+  '65 no AKQJ4 — ar puro, zero showdown value. GTO: bluff. AKQJ permite representar AT ou KT (straight) no teu rango BTN.',
+  'AKQJ4上的65——纯空气，零摊牌价值。GTO：诈唬。AKQJ牌面让你代表BTN范围中的AT或KT（顺子）。BB无法宽范围防守。')},
+// ══ RIVER — facing bet ══
+{id:'r6',street:'river',hp:'BB',vp:'BTN',ip:false,facing:'bet',facingS:'16.5bb',pot:'22bb',
+ hole:[{r:'A',s:'♦'},{r:'A',s:'♣'}],board:[{r:'K',s:'♠'},{r:'7',s:'♥'},{r:'2',s:'♦'},{r:'9',s:'♣'},{r:'3',s:'♠'}],
+ tex:['rainbow'],made:'AA — 2nd best hand facing river bet',gto:'call',sz:null,szO:[],ex:mkex(
+  'AA river on K7293 vs BTN 75% bet (pot 22bb). GTO: call. AA is 2nd best hand (only sets beat you). Raising OOP gets called only by hands that beat you (sets). Calling captures value from BTN bluffs and thin value-bets.',
+  'AA ривер на K7293 против 75% ставки BTN (пот 22bb). GTO: колл. AA — 2-я лучшая рука (только сеты бьют). Рейз OOP вызывают только руки, которые тебя бьют (сеты). Колл захватывает ценность от блафов BTN.',
+  'AA river en K7293 vs bet 75% BTN (bote 22bb). GTO: call. AA es la 2ª mejor mano (solo sets ganan). Raise OOP es llamado solo por manos que te ganan. Call captura valor de bluffs y thin value-bets del BTN.',
+  'AA river no K7293 vs bet 75% BTN (pot 22bb). GTO: call. AA é a 2ª melhor mão (só sets ganham). Raise OOP é chamado só por mãos que ganham de você.',
+  'K7293河牌上AA面对BTN的75%下注（底池22bb）。GTO：跟注。AA是第二好手牌（只有三条能赢）。OOP加注只被能赢你的手牌（三条）跟注。跟注从BTN诈唬和薄价值注中获取价值。')},
+{id:'r7',street:'river',hp:'BTN',vp:'BB',ip:true,facing:'bet',facingS:'allin',pot:'18bb',
+ hole:[{r:'Q',s:'♣'},{r:'J',s:'♣'}],board:[{r:'T',s:'♣'},{r:'9',s:'♣'},{r:'8',s:'♣'},{r:'3',s:'♦'},{r:'2',s:'♥'}],
+ tex:['flush'],made:'Straight-flush — near-nuts',gto:'allin',sz:null,szO:[],ex:mkex(
+  'QJ straight-flush on T98! BB goes all-in. GTO: call (near-nuts). Straight-flush is the 2nd strongest hand in poker — only royal flush beats it. Any hesitation or fold would be a catastrophic EV mistake.',
+  'QJ стрит-флаш на T98! BB идёт олл-ин. GTO: колл (почти натсы). Стрит-флаш — 2-я по силе рука в покере. Любая нерешительность или фолд — катастрофическая ошибка EV.',
+  'QJ straight-flush en T98! BB va all-in. GTO: call (near-nuts). El straight-flush es la 2ª mano más fuerte. Cualquier duda o fold sería un error catastrófico de EV.',
+  'QJ straight-flush no T98! BB vai all-in. GTO: call (near-nuts). O straight-flush é a 2ª mão mais forte. Qualquer hesitação ou fold seria um erro catastrófico de EV.',
+  'T98上的QJ同花顺！BB全押。GTO：跟注（近乎坚果）。同花顺是第二强手牌——只有皇家同花顺能赢。任何犹豫或弃牌都是灾难性的EV错误。')},
+{id:'r8',street:'river',hp:'BTN',vp:'BB',ip:true,facing:'bet',facingS:'18bb',pot:'30bb',
+ hole:[{r:'J',s:'♠'},{r:'J',s:'♦'}],board:[{r:'J',s:'♣'},{r:'7',s:'♥'},{r:'3',s:'♦'},{r:'2',s:'♠'},{r:'5',s:'♣'}],
+ tex:['dry','trips'],made:'Trips JJJ — facing donk bet',gto:'raise',sz:null,szO:[],ex:mkex(
+  'JJ — trips on river (J7325). BB donk bets 60% (pot 30bb). GTO: raise for value (~2.3x). Trips is very strong. BB can be bluffing or value-betting worse (two-pair, pair). Never just call trips when villain bets into you on river.',
+  'JJ — трипс на ривере (J7325). BB делает донк-бет 60% (пот 30bb). GTO: рейз для ценности (~2.3x). Трипс очень силён. BB может блафовать или ставить ценность с худшим. Никогда не просто колл трипс при ставке соперника.',
+  'JJ — trips en river (J7325). BB hace donk-bet 60% (bote 30bb). GTO: raise por valor (~2.3x). Trips es muy fuerte. BB puede estar bluffeando o apostando por valor con peor.',
+  'JJ — trips no river (J7325). BB faz donk-bet 60% (pot 30bb). GTO: raise por valor (~2.3x). Trips é muito forte.',
+  '河牌（J7325）上的JJ三条。BB主动下注60%（底池30bb）。GTO：加注取值（约2.3倍）。三条非常强。BB可能在诈唬或用更差的牌取值。在河牌对手主动下注时永远不要仅跟注三条。')},
+{id:'r9',street:'river',hp:'CO',vp:'BTN',ip:false,facing:'bet',facingS:'25bb',pot:'40bb',
+ hole:[{r:'5',s:'♠'},{r:'4',s:'♠'}],board:[{r:'A',s:'♥'},{r:'K',s:'♣'},{r:'Q',s:'♦'},{r:'J',s:'♠'},{r:'T',s:'♠'}],
+ tex:['straight','highboard'],made:'Broadway straight — absolute nuts',gto:'raise',sz:null,szO:[],ex:mkex(
+  '54 — broadway straight (AKQJT) — absolute nuts! BTN bets 62% pot (pot 40bb). GTO: raise to ~2.5x! Nothing beats broadway. Always raise the nuts when villain bets into you — never flat call the nuts on river.',
+  '54 — broadway стрит (AKQJT) — абсолютные натсы! BTN бетит 62% пота (пот 40bb). GTO: рейз до ~2.5x! Ничто не бьёт broadway. Всегда рейзируй натсы когда соперник ставит в тебя — никогда не флет-колл натсы на ривере.',
+  '54 — straight broadway (AKQJT) — nuts absolutas! BTN apuesta 62% pot (bote 40bb). GTO: raise a ~2.5x! Nada gana al broadway. Siempre raise las nuts cuando el villano apuesta — nunca flat call las nuts en river.',
+  '54 — straight broadway (AKQJT) — nuts absolutas! BTN aposta 62% pot (pot 40bb). GTO: raise a ~2.5x! Nada ganha do broadway. Sempre raise as nuts quando o vilão aposta.',
+  '54——百老汇顺子（AKQJT）——绝对坚果牌！BTN下注底池62%（底池40bb）。GTO：加注约2.5倍！没有任何牌能赢百老汇顺子。对手下注时永远加注坚果牌——河牌永远不要平跟坚果牌。')},
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// STATE — with localStorage persistence
+// ═══════════════════════════════════════════════════════════════════
+const STORAGE_KEY='pgtst_v2';
+function freshST(){return{
+  correct:0,total:0,partial:0,streak:0,best:0,
+  sByMode:{starts:{c:0,p:0,t:0},pre:{c:0,p:0,t:0},flop:{c:0,p:0,t:0},turn:{c:0,p:0,t:0},river:{c:0,p:0,t:0}},
+  sByPos:{UTG:{c:0,p:0,t:0},HJ:{c:0,p:0,t:0},CO:{c:0,p:0,t:0},BTN:{c:0,p:0,t:0},SB:{c:0,p:0,t:0},BB:{c:0,p:0,t:0}},
+  mistakes:{},adsRemoved:false,
+};}
+let ST=Object.assign(freshST(),{mode:'starts',cur:null,curPos:null,selSz:null});
+
+function saveStats(){
+  try{
+    const s=freshST();
+    Object.assign(s,{correct:ST.correct,total:ST.total,partial:ST.partial,
+      streak:ST.streak,best:ST.best,sByMode:ST.sByMode,sByPos:ST.sByPos,
+      mistakes:ST.mistakes,adsRemoved:ST.adsRemoved});
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(s));
+  }catch(e){}
+}
+function loadStats(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw)return;
+    const s=JSON.parse(raw);
+    ['correct','total','partial','streak','best','sByMode','sByPos','mistakes','adsRemoved']
+      .forEach(k=>{if(s[k]!==undefined)ST[k]=s[k];});
+    if(s.adsRemoved){
+      document.getElementById('remove-ads-stat-btn')?.classList.add('gone');
+    }
+
+  }catch(e){}
+}
+
+// Shuffle queue — ensures each scenario shown before repeating
+const QQ={};
+function shuffle(a){const r=[...a.keys()];for(let i=r.length-1;i>0;i--){const j=0|Math.random()*(i+1);[r[i],r[j]]=[r[j],r[i]];}return r;}
+function pick(k,pool){if(!QQ[k]||!QQ[k].length)QQ[k]=shuffle(pool);return pool[QQ[k].pop()];}
+const SU=['♠','♥','♦','♣'];
+function rS(){return SU[0|Math.random()*4];}
+function vary(h){
+  if(h.c1===h.c2){let s1=rS(),s2=rS();while(s2===s1)s2=rS();return{...h,s1,s2};}
+  if(h.s1===h.s2){const s=rS();return{...h,s1:s,s2:s};}
+  let s1=rS(),s2=rS();while(s2===s1)s2=rS();
+  return{...h,s1,s2};
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════════════════════════════
+let obCurrentLang='en'; // must be declared before startGame
+function startGame(){
+  // Check if onboarding needs to show first
+  const seen=localStorage.getItem('ob_seen_'+CL)||localStorage.getItem('ob_seen');
+  if(!seen){
+    obCurrentLang=CL; // remember lang for onboarding
+    document.getElementById('onboard').style.display='flex';
+    obUpdate();
+    return; // onboarding will call doStartGame() when done
+  }
+  doStartGame();
+}
+function doStartGame(){
+  document.getElementById('splash').classList.add('hidden');
+  document.getElementById('game').classList.remove('hidden');
+  applyLang(); buildTable(); nextQ();
+}
+function backToSplash(){
+  document.getElementById('game').classList.add('hidden');
+  document.getElementById('splash').classList.remove('hidden');
+  // Show "back to game" button
+  const bb=document.getElementById('back-from-game-btn');
+  if(bb){bb.classList.remove('hidden');bb.textContent=T('back_to_game');}
+  // Update start button text
+  const sb=document.getElementById('start-btn');
+  if(sb)sb.textContent=T('start');
+}
+function hideBackBtn(){
+  document.getElementById('back-from-game-btn')?.classList.add('hidden');
+  doStartGame();
+}
+function setMode(m){
+  ST.mode=m;
+  ['starts','pre','flop','turn','river'].forEach(x=>document.getElementById('mn-'+x).classList.toggle('active',x===m));
+  nextQ();
+}
+function openStats(){document.getElementById('stats-screen').classList.add('open');renderStats();}
+function closeStats(){document.getElementById('stats-screen').classList.remove('open');}
+
+// ═══════════════════════════════════════════════════════════════════
+// TABLE & CARDS
+// ═══════════════════════════════════════════════════════════════════
+// Base seat positions with BTN at bottom (reference layout)
+const SEAT_BASE={
+  BTN:{x:50,y:92},  // bottom center
+  CO: {x:83,y:72},  // bottom right
+  HJ: {x:91,y:42},  // right
+  UTG:{x:75,y:10},  // top right
+  SB: {x:25,y:10},  // top left
+  BB: {x:9, y:42},  // left
+};
+// Rotation order: seat positions rotate so hero is always at bottom
+const SEAT_ORDER=['BTN','CO','HJ','UTG','SB','BB'];
+// Get visual positions with hero at bottom
+function getSeatsForHero(heroPos){
+  try{
+  if(!heroPos||SEAT_ORDER.indexOf(heroPos)===-1) return SEATS;
+  const heroIdx=SEAT_ORDER.indexOf(heroPos);
+  const btnIdx=SEAT_ORDER.indexOf('BTN');
+  const rotate=heroIdx-btnIdx;
+  const result=[];
+  SEAT_ORDER.forEach((pos,i)=>{
+    const baseIdx=((i-rotate)%6+6)%6;
+    const basePos=SEAT_ORDER[baseIdx];
+    result.push({p:pos,...SEAT_BASE[basePos]});
+  });
+  return result;
+  }catch(e){console.error("getSeatsForHero:",e);return SEATS;}
+}
+const SEATS=SEAT_ORDER.map(p=>({p,...SEAT_BASE[p]}));
+// Villain bet chip: offset toward center from each base seat position
+const VBET_OFFSET={
+  BTN:{left:'50%', top:'80%'},
+  CO: {left:'72%', top:'64%'},
+  HJ: {left:'85%', top:'26%'},
+  UTG:{left:'67%', top:'18%'},
+  SB: {left:'33%', top:'18%'},
+  BB: {left:'15%', top:'26%'}
+};
+// Get villain chip position based on current table layout
+function getVPos(heroPos,villainPos){
+  if(!heroPos||heroPos==='BTN') return VBET_OFFSET[villainPos]||null;
+  const seats=getSeatsForHero(heroPos);
+  const vSeat=seats.find(s=>s.p===villainPos);
+  if(!vSeat) return VBET_OFFSET[villainPos]||null;
+  const cx=50,cy=50;
+  // Side seats: x<18 or x>82 — chip goes above board (y<30%)
+  const isSide=(vSeat.x<18||vSeat.x>82);
+  let lx,ly;
+  if(isSide){
+    // Stay near seat x but move to y=22-28% (above board)
+    lx=vSeat.x+(cx-vSeat.x)*0.18; // slight inward
+    ly=vSeat.y<50?25:72;           // above or below board
+  } else {
+    // Top/bottom seats: 28% toward center
+    lx=vSeat.x+(cx-vSeat.x)*0.28;
+    ly=vSeat.y+(cy-vSeat.y)*0.28;
+  }
+  return{left:lx.toFixed(1)+'%',top:ly.toFixed(1)+'%'};
+}
+
+function buildTable(heroPos){
+  try{
+  const tbl=document.getElementById('poker-table');
+  tbl.querySelectorAll('.seat').forEach(s=>s.remove());
+  const seats=(heroPos?getSeatsForHero(heroPos):null)||SEATS;
+  seats.forEach((sp,i)=>{
+    const seat=document.createElement('div');seat.className='seat';seat.id='seat-'+sp.p;
+    const chip=document.createElement('div');chip.className='seat-chip';
+    // Hero seat gets special styling
+    const isHero=sp.p===heroPos;
+    chip.innerHTML=`<span class="sa">${sp.p}</span><span class="sb"></span>`;
+    if(sp.p==='BTN'&&!heroPos){const d=document.createElement('div');d.className='dealer-dot';d.textContent='D';chip.appendChild(d);}
+    seat.style.left=sp.x+'%';seat.style.top=sp.y+'%';
+    seat.appendChild(chip);tbl.appendChild(seat);
+  });
+  }catch(e){console.error("buildTable:",e);}
+}
+function hlSeat(a){SEATS.forEach(sp=>{const s=document.getElementById('seat-'+sp.p);if(s)s.classList.toggle('active',sp.p===a);});}
+
+function setPot(txt){
+  const b=document.getElementById('pot-badge');
+  if(txt){b.textContent=T('pot_lbl')+': '+txt;b.classList.remove('hidden');}
+  else b.classList.add('hidden');
+}
+function showVBet(vp,amount){
+  clearVBet(); // clear previous
+  if(!amount||!vp)return;
+  const seat=document.getElementById('seat-'+vp);
+  if(!seat)return;
+  // Expand the seat chip and show bet amount inside
+  seat.classList.add('betting');
+  const sb=seat.querySelector('.sb');
+  if(sb)sb.textContent=amount;
+}
+function clearVBet(){
+  document.querySelectorAll('.seat.betting').forEach(s=>{
+    s.classList.remove('betting');
+    const sb=s.querySelector('.sb');
+    if(sb)sb.textContent='';
+  });
+}
+function clearBoard(){
+  document.getElementById('board-inner').classList.add('hidden');
+  document.getElementById('board-inner').innerHTML='';
+  document.getElementById('tbl-center').classList.remove('hidden');
+  setPot(null);clearVBet();
+}
+function mkCard(c){
+  const isR=c.s==='♥'||c.s==='♦';
+  const card=document.createElement('div');
+  card.className='playing-card'+(isR?' red':' black');
+  // Corner top-left, center suit only, corner bottom-right (rotated)
+  card.innerHTML=`<div class="cc"><span>${c.r}</span><span>${c.s}</span></div><div class="cs">${c.s}</div><div class="ccb"><span>${c.r}</span><span>${c.s}</span></div>`;
+  return card;
+}
+function showBoard(cards){
+  try{
+  const el=document.getElementById('board-inner');
+  document.getElementById('tbl-center').classList.add('hidden');
+  el.classList.remove('hidden');el.innerHTML='';
+  cards.forEach((c,i)=>{const card=mkCard(c);card.style.animationDelay=(i*0.06)+'s';el.appendChild(card);});
+  }catch(e){console.error("showBoard:",e);}
+}
+function renderHole(cards){
+  try{
+  const a=document.getElementById('hole-cards');a.innerHTML='';
+  cards.forEach((c,i)=>{const card=mkCard(c);card.style.animationDelay=(i*0.07)+'s';a.appendChild(card);});
+  }catch(e){console.error("renderHole:",e);}
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// QUESTION GENERATION
+// ═══════════════════════════════════════════════════════════════════
+function nextQ(){
+  try{
+  document.getElementById('result-overlay').classList.add('hidden');
+  if(drillMode){drillIdx++;nextDrillQ();return;}
+  if(interstitPending){showInterstitial();return;} // ad showing, wait
+  ST.selSz=null;
+  document.querySelectorAll('.sz-btn').forEach(b=>b.classList.remove('sel'));
+  if(ST.mode==='starts') genStarts();
+  else if(ST.mode==='pre') genPre();
+  else genPost(ST.mode);
+  updQS();
+  }catch(e){console.error("nextQ:",e);}
+}
+
+const TEX_LABELS={
+  dry:'Dry',wet:'Wet',rainbow:'Rainbow',monotone:'Monotone',connected:'Connected',
+  lowboard:'Low board',highboard:'High board',flushdraw:'Flush draw',oesd:'OESD',
+  toppair:'Top pair',paired:'Paired',missed:'Missed',straight:'Straight',
+  flush:'Flush',trips:'Trips',overcard:'Overcard',overpair:'Overpair'
+};
+function setSit(badges,desc,texArr){
+  const row=document.getElementById('sit-row');row.innerHTML='';
+  badges.forEach(b=>{
+    const s=document.createElement('span');s.className='sit-badge '+b.cls;s.textContent=b.txt;
+
+    row.appendChild(s);
+  });
+  document.getElementById('sit-desc').textContent=desc||'';
+  const tg=document.getElementById('tex-tags');tg.innerHTML='';
+  (texArr||[]).forEach(t=>{
+    const sp=document.createElement('span');
+    const tc=['wet','flushdraw','oesd'].includes(t)?'w':['dry','rainbow'].includes(t)?'d':['monotone','flush'].includes(t)?'m':'';
+    sp.className='ttag '+tc;sp.textContent=TEX_LABELS[t]||t;tg.appendChild(sp);
+  });
+}
+function showSizing(title,opts){
+  const box=document.getElementById('sz-box');box.classList.remove('hidden');
+  document.getElementById('sz-title').textContent=title;
+  const grid=document.getElementById('sz-grid');grid.innerHTML='';
+  opts.forEach(sz=>{
+    const b=document.createElement('button');b.className='sz-btn';
+    b.textContent=SZL[sz]||SZL[parseFloat(sz)]||sz;b.dataset.sz=sz;
+    b.onclick=()=>{
+      ST.selSz=sz;
+      document.querySelectorAll('.sz-btn').forEach(x=>x.classList.toggle('sel',x.dataset.sz===sz));
+    };
+    grid.appendChild(b);
+  });
+}
+// Action buttons always in English — universal poker terms
+const ACLS={fold:'b-fold',check:'b-check',call:'b-call',bet:'b-bet',raise:'b-raise',allin:'b-allin'};
+const ALAB={fold:'Fold',check:'Check',call:'Call',bet:'Bet',raise:'Raise',allin:'All-in'};
+function mkActions(acts,cols,disabledActs){
+  const g=document.getElementById('act-grid');g.innerHTML='';
+  const n=acts.length;
+  if(cols===3) g.style.gridTemplateColumns='1fr 1fr 1fr';
+  else g.style.gridTemplateColumns='1fr 1fr';
+  const h=n<=2?72:n===3?54:44;
+  const fs=n<=2?17:n===3?15:14;
+  acts.forEach(a=>{
+    const btn=document.createElement('button');btn.className='act-btn '+(ACLS[a]||'b-call');
+    btn.textContent=ALAB[a]||a;
+    btn.style.minHeight=h+'px';
+    btn.style.fontSize=fs+'px';
+    if(disabledActs&&disabledActs.includes(a)){
+      btn.disabled=true;
+      btn.style.opacity='0.28';
+      btn.style.cursor='not-allowed';
+    } else {
+      btn.onclick=()=>answer(a);
+    }
+    g.appendChild(btn);
+  });
+}
+
+// GTO logic for starting hands based on tier + position
+// Verified against GTO solver ranges:
+// UTG opens ~15%: AA-TT, AK, AQs, AJs, ATs, KQs, AQo (tier 1-2 premiums)
+// HJ opens ~20%: + 99-77, JTs, KJs, QJs, KQo etc (tier 1-3)
+// CO opens ~27%: + 66-55, JTo, KJo etc (tier 1-4)
+// BTN opens ~45%: + small pairs, suited connectors (tier 1-4)
+// SB 3-bets or completes; BB defends wide
+function getStartGTO(hand,pa){
+  const ti=hand.tier||3;
+  if(pa==='UTG') return ti<=2?'raise':ti===3&&hand.mixed?hand.mixed:ti===3?'call':'fold';
+  if(pa==='HJ')  return ti<=3?'raise':ti===4&&hand.mixed?hand.mixed:ti===4?'call':'fold';
+  if(pa==='CO')  return ti<=4?'raise':ti===5&&hand.mixed?'raise':'fold';
+  if(pa==='BTN') return ti<=4?'raise':ti===5&&hand.mixed?'raise':'fold';
+  if(pa==='SB')  return ti<=2?'raise':ti===3?'raise':ti===4&&hand.mixed?hand.mixed:'fold';
+  if(pa==='BB')  return ti===1?'raise':ti<=4?'call':'fold';
+  return hand.gto||'fold';
+}
+
+function genStarts(){
+  try{
+  const h=vary(pick('st',STARTS));
+  const posKeys=['UTG','HJ','CO','BTN','SB','BB'];
+  const pa=posKeys[0|Math.random()*posKeys.length];
+  ST.cur={...h,street:'preflop',heroPos:pa};ST.curPos={abbr:pa};
+  clearBoard();buildTable(pa);hlSeat(pa);
+  renderHole([{r:h.c1,s:h.s1},{r:h.c2,s:h.s2}]);
+  setSit([{cls:'hand',txt:h.name},{cls:'ip',txt:pa}],posDesc(pa),[]);
+  showSizing(T('sz_bb'),['2x','2.5x','3x','3.5x','4x']);
+  document.getElementById('q-text').textContent=pa+' — '+T('action');
+  mkActions(['fold','call','raise'],3);
+  showHintBtn();
+  }catch(e){console.error("genStarts:",e);}
+}
+
+function genPre(){
+  try{
+  const sc=pick('pre',PRE);
+  ST.cur={...sc,street:'preflop'};ST.curPos={abbr:sc.hp};
+  clearBoard();buildTable(sc.hp);hlSeat(sc.hp);
+  renderHole(sc.hole);setPot(sc.pot);
+  if(sc.vp&&sc.action&&sc.amount) showVBet(sc.vp,sc.amount);
+  else clearVBet();
+  const desc=sc.action
+    ?`${sc.vp} ${sc.action} → ${sc.amount} · ${T('pot_lbl')}: ${sc.pot}`
+    :`${T('pot_lbl')}: ${sc.pot}`;
+  const facingBadge=sc.action
+    ?[{cls:'facing',txt:`${T('facing')} ${sc.vp}: ${sc.action} ${sc.amount}`}]
+    :[];
+  setSit([...facingBadge,{cls:'ip',txt:sc.hp}],desc,[]);
+  // Show open-raise sizing when hero needs to open (no villain bet, gto=raise)
+  if(sc.gto==='raise'&&(!sc.action||sc.action==='limp')){
+    showSizing(T('sz_bb'),['2x','2.5x','3x','3.5x','4x']);
+  } else {
+    document.getElementById('sz-box').classList.add('hidden');
+  }
+  document.getElementById('q-text').textContent=T('action');
+  mkActions(sc.acts||['fold','call','raise'],3);
+  showHintBtn();
+  }catch(e){console.error("genPre:",e);}
+}
+
+function genPost(street){
+  try{
+  const pool=POSTFLOP.filter(s=>s.street===street);
+  const sc=pick(street,pool);
+  ST.cur=sc;ST.curPos={abbr:sc.hp};
+  buildTable(sc.hp);hlSeat(sc.hp);
+  const bCount=sc.street==='flop'?3:sc.street==='turn'?4:5;
+  showBoard(randomizeBoard(sc).slice(0,bCount));
+  setPot(sc.pot||'');
+  // Villain bet chip — only when hero is facing a bet
+  if(sc.facing&&sc.facingS) showVBet(sc.vp,sc.facingS==='allin'?'ALL-IN':sc.facingS);
+  else clearVBet();
+  renderHole(sc.hole);
+  const ipTxt=sc.ip?T('ip'):T('oop');
+  const badges=[{cls:sc.ip?'ip':'oop',txt:ipTxt},{cls:'hand',txt:sc.made}];
+  if(sc.facing) badges.push({cls:'facing',txt:`${T('facing')}: ${sc.facingS==='allin'?'ALL-IN':sc.facingS}`});
+  const desc=sc.facing
+    ?`${sc.vp} bets ${sc.facingS} · ${T('pot_lbl')}: ${sc.pot}`
+    :`${T('pot_lbl')}: ${sc.pot}`;
+  setSit(badges,desc,sc.tex||[]);
+  // Show sizing only when hero initiates bet/raise (not facing villain bet)
+  if((sc.gto==='bet'||sc.gto==='raise')&&!sc.facing&&sc.szO&&sc.szO.length){
+    showSizing(T('sz_pot'),sc.szO.map(x=>String(x)));
+  } else {
+    document.getElementById('sz-box').classList.add('hidden');
+  }
+  // Build action buttons
+  let acts;
+  if(sc.facing) acts=['fold','call','raise','allin'];
+  else acts=['fold','check','bet','allin'];
+  const qLbl=sc.facing
+    ?`${sc.vp} bets ${sc.facingS} — ${T('action')}`
+    :(sc.ip?T('ip'):T('oop'))+' — '+T('action');
+  document.getElementById('q-text').textContent=qLbl;
+  mkActions(acts,4,sc.facing?null:['fold']);
+  showHintBtn();
+  }catch(e){console.error("genPost:",e);}
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ANSWER LOGIC
+// Logic verified:
+// - Preflop STARTS: getStartGTO() → correct action check + sizing check
+// - Preflop PRE: sc.gto must match action exactly
+// - Postflop: action must match sc.gto; allin=raise interchangeable when facing
+// - Sizing: only required when sz-box visible; |selected - correct| <= 0.25 = partial
+// - ST.total++ exactly once per answer call
+// ═══════════════════════════════════════════════════════════════════
+function answer(action){
+  try{
+  const sc=ST.cur;const pos=ST.curPos;if(!sc)return;
+
+  // Enforce sizing selection when sizing box is visible
+  const szVisible=!document.getElementById('sz-box').classList.contains('hidden');
+  if((action==='bet'||action==='raise')&&szVisible&&!ST.selSz){
+    const box=document.getElementById('sz-box');
+    box.style.border='1px solid var(--gold)';
+    box.style.boxShadow='0 0 10px rgba(201,168,76,.4)';
+    const tit=document.getElementById('sz-title');
+    const orig=tit.textContent;
+    tit.textContent='← '+T('sz_if')+'!';
+    setTimeout(()=>{box.style.border='';box.style.boxShadow='';tit.textContent=orig;},1200);
+    return;
+  }
+
+  ST.total++; // exactly once
+  const street=sc.street||'preflop';
+  let verdict='wrong';
+  const correctAction=sc.gto||'fold';
+  const explanation=ex(sc.ex)||'';
+
+  if(street==='preflop'){
+    // STARTS mode: use position-aware GTO; PRE mode: use sc.gto directly
+    const ca=ST.mode==='starts'?getStartGTO(sc,pos.abbr):sc.gto;
+    // Action is correct if matches primary GTO or acceptable mixed action
+    const actionOk=(action===ca)||(sc.mixed&&action===sc.mixed);
+    if(actionOk){
+      // Check open-raise sizing for starts mode AND pre mode opens
+      const isOpenRaise=action==='raise'&&(ST.mode==='starts'||(ST.mode==='pre'&&(!sc.action||sc.action==='limp')));
+      if(isOpenRaise&&!document.getElementById('sz-box').classList.contains('hidden')){
+        const SM={
+          UTG:{exact:['3x'],    close:['2.5x','3.5x']},
+          HJ: {exact:['2.5x','3x'],close:['3.5x']},
+          CO: {exact:['2.5x'], close:['2x','3x']},
+          BTN:{exact:['2.5x'], close:['2x','3x']},
+          SB: {exact:['3x'],   close:['2.5x','3.5x']},
+          BB: {exact:['2.5x','3x'],close:['3.5x']},
+        };
+        const pa=pos?.abbr||sc.hp||sc.heroPos||'BTN';
+        const rule=SM[pa]||{exact:['2.5x','3x'],close:[]};
+        if(rule.exact.includes(ST.selSz)) verdict='correct';
+        else if(rule.close.includes(ST.selSz)||ST.selSz) verdict='partial';
+        else verdict='partial';
+      } else {
+        verdict='correct';
+      }
+    }
+  } else {
+    // Postflop: allin and raise are interchangeable when facing or when gto=allin
+    const gto=sc.gto;
+    const actionOk=
+      action===gto ||
+      (gto==='allin'&&(action==='raise'||action==='call')) || // allin can also be called
+      (gto==='raise'&&action==='allin'&&sc.facing); // raise vs facing = allin ok
+    if(actionOk){
+      // Check bet sizing when hero initiates bet
+      if(action==='bet'&&!sc.facing&&szVisible&&sc.sz){
+        const sel=parseFloat(ST.selSz);
+        const correct=sc.sz;
+        verdict=Math.abs(sel-correct)<=0.25?'correct':'partial';
+      } else {
+        verdict='correct';
+      }
+    }
+  }
+
+  // Update counters
+  const ok=verdict==='correct',pt=verdict==='partial';
+  if(ok){ST.correct++;ST.streak++;if(ST.streak>ST.best)ST.best=ST.streak;}
+  else{ST.streak=0;if(pt)ST.partial++;}
+
+  // Update mode and position stats
+  const m=ST.mode;
+  if(ST.sByMode[m]){ST.sByMode[m].t++;if(ok)ST.sByMode[m].c++;if(pt)ST.sByMode[m].p++;}
+  const pa=pos?.abbr||sc.hp||sc.heroPos||'BTN';
+  if(ST.sByPos[pa]){ST.sByPos[pa].t++;if(ok)ST.sByPos[pa].c++;if(pt)ST.sByPos[pa].p++;}
+
+  // Track mistakes for review
+  if(!ok){
+    const mk=sc.id+'_'+action+(pt?'_sz':'');
+    if(!ST.mistakes[mk])ST.mistakes[mk]={
+      hand:sc.name||sc.made||sc.id,
+      // Store keys for translation, not translated strings
+      actionKey:action,
+      correctKey:correctAction,
+      type:pt?'sizing':'action',
+      count:0
+    };
+    ST.mistakes[mk].count++;
+  }
+
+  // Daily goal
+  if(verdict==='correct'||verdict==='partial'){
+    const daily=incDailyCount();
+    updateDailyBar();
+    if(daily===DAILY_GOAL){
+      updateDayStreak();
+      // Small celebration on daily goal complete
+      setTimeout(()=>{
+        const toast=document.getElementById('streak-toast');
+        const em=document.getElementById('st-emoji');
+        const num=document.getElementById('st-num');
+        const lbl=document.getElementById('st-lbl');
+        if(em)em.textContent='🎯';
+        if(num)num.textContent='25';
+        if(lbl)lbl.textContent=T('daily_done')||'Daily goal!';
+        if(toast){toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2500);}
+      },600);
+    }
+  }
+  // Streak toast on 5, 10, 15...
+  if(verdict==='correct') checkStreakToast(ST.streak);
+  updQS();
+  saveStats(); // persist after every answer
+  haptic(verdict); // haptic feedback
+  checkInterstitial(); // queue interstitial every 20 hands
+  showResult(verdict,correctAction,sc,pos,explanation,action);
+  }catch(e){console.error("answer:",e);if(ST.cur)nextQ();}
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// RESULT DISPLAY
+// ═══════════════════════════════════════════════════════════════════
+function showResult(verdict,correctAction,sc,pos,explanation,playerAction){
+  try{
+  const iconWrap=document.getElementById('res-icon-wrap');
+  const title=document.getElementById('res-title');
+  const sub=document.getElementById('res-sub');
+
+  if(verdict==='correct'){
+    iconWrap.className='res-icon ok';
+    document.getElementById('res-icon').textContent='✓';
+    title.className='res-title ok';
+    title.textContent=T('correct');
+    sub.textContent=ST.streak>1?ST.streak+' '+T('streak'):'';
+  } else if(verdict==='partial'){
+    iconWrap.className='res-icon pt';
+    document.getElementById('res-icon').textContent='~';
+    title.className='res-title pt';
+    title.textContent=T('partial');
+    sub.textContent='';
+  } else {
+    iconWrap.className='res-icon no';
+    document.getElementById('res-icon').textContent='✗';
+    title.className='res-title no';
+    title.textContent=T('wrong');
+    sub.textContent=`${ALAB[playerAction]||playerAction} → ${ALAB[correctAction]||correctAction}`;
+  }
+
+  document.getElementById('res-exp').textContent=explanation;
+  document.getElementById('res-act-val').textContent=ALAB[correctAction]||correctAction;
+
+  // GTO sizing hint
+  const szEl=document.getElementById('res-sz');
+  const isOpenRaiseSz=sc.street==='preflop'&&correctAction==='raise'&&
+    (ST.mode==='starts'||(ST.mode==='pre'&&(!sc.action||sc.action==='limp')));
+  if(isOpenRaiseSz){
+    const SM={UTG:'3x',HJ:'2.5–3x',CO:'2.5x',BTN:'2.5x',SB:'3x',BB:'2.5–3x'};
+    const pa=pos?.abbr||sc.hp||sc.heroPos||'BTN';
+    const chosen=ST.selSz?` (${T('you_chose')}: ${ST.selSz})`:'';
+    szEl.textContent=`${T('gto_sz')} ${pa}: ${SM[pa]||'2.5x'} BB${chosen}`;
+  } else if(sc.sz&&(correctAction==='bet'||correctAction==='raise')&&!sc.facing){
+    const chosen=ST.selSz?` (${T('you_chose')}: ${SZL[parseFloat(ST.selSz)]||ST.selSz})`:'';
+    szEl.textContent=`${T('gto_sz')}: ${SZL[sc.sz]||sc.sz} pot${chosen}`;
+  } else {
+    szEl.textContent='';
+  }
+
+  document.getElementById('result-overlay').classList.remove('hidden');
+  }catch(e){console.error("showResult:",e);}
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// STATISTICS
+// ═══════════════════════════════════════════════════════════════════
+function updQS(){
+  document.getElementById('qs-c').textContent=ST.correct;
+  document.getElementById('qs-t').textContent=ST.total;
+  document.getElementById('qs-a').textContent=ST.total>0?Math.round(ST.correct/ST.total*100)+'%':'—';
+  document.getElementById('qs-s').textContent=ST.streak;
+}
+
+function renderStats(){
+  try{
+  document.getElementById('st-tot').textContent=ST.total;
+  document.getElementById('st-acc').textContent=ST.total>0?Math.round(ST.correct/ST.total*100)+'%':'—';
+  document.getElementById('st-pt').textContent=ST.partial||0;
+  document.getElementById('st-str').textContent=ST.best;
+
+  const modeNm={
+    starts:T('m_starts'),pre:T('m_pre'),flop:T('m_flop'),turn:T('m_turn'),river:T('m_river')
+  };
+  function renderBarList(elId,data,nameFn){
+    const el=document.getElementById(elId);el.innerHTML='';
+    const entries=Object.entries(data).filter(([,d])=>d.t>0);
+    if(!entries.length){
+      el.innerHTML=`<div class="empty-stats">${T('empty')}</div>`;return;
+    }
+    entries.forEach(([k,d])=>{
+      const pct=Math.round(d.c/d.t*100);
+      const col=pct>=70?'var(--green)':pct>=50?'var(--orange)':'#e87979';
+      el.innerHTML+=`<div class="ss-row">
+        <div class="ss-row-name">${nameFn(k)}</div>
+        <div class="ss-bar-wrap">
+          <div class="ss-bar-bg"><div class="ss-bar-fill" style="width:${pct}%;background:${col}"></div></div>
+          <div class="ss-bar-sub">${d.c} ✓ · ${d.p||0} ~ · ${d.t} ${T('st_tot_s')}</div>
+        </div>
+        <div class="ss-row-pct" style="color:${col}">${pct}%</div>
+      </div>`;
+    });
+  }
+  renderBarList('mode-stats',ST.sByMode,k=>modeNm[k]||k);
+  renderBarList('pos-stats',ST.sByPos,k=>k);
+
+  const mkl=document.getElementById('mistake-list');mkl.innerHTML='';
+  const sorted=Object.values(ST.mistakes).sort((a,b)=>b.count-a.count).slice(0,8);
+  const drillBtn=document.getElementById('drill-btn');
+
+  if(!sorted.length){
+    mkl.innerHTML=`<div class="empty-stats">${T('no_mk')}</div>`;
+    if(drillBtn){drillBtn.classList.remove('visible');drillBtn.textContent=T('drill_btn');}
+  } else {
+    sorted.forEach(m=>{
+      const mkDesc=m.type==='sizing'
+      ?T('sz_right')
+      :(m.actionKey&&m.correctKey
+        ?`${getActionLabel(m.actionKey)} → ${getActionLabel(m.correctKey)}`
+        :(m.desc||''));
+    mkl.innerHTML+=`<div class="mk-item">
+        <span class="mk-cnt">${m.count}×</span>
+        <div class="mk-hand">${m.hand}</div>
+        <div class="mk-desc">${mkDesc}</div>
+      </div>`;
+    });
+    // Show drill button when mistakes exist
+    if(drillBtn){
+      drillBtn.textContent=T('drill_btn');
+      drillBtn.classList.add('visible');
+    }
+  }
+
+  // Day streak card
+  try{
+    const days=parseInt(localStorage.getItem('pgtst_day_streak')||'0',10);
+    const dl=document.getElementById('stl-days');
+    const dv=document.getElementById('st-days');
+    const ds=document.getElementById('stls-days');
+    if(dl)dl.textContent=T('day_streak')||'Day Streak';
+    if(dv)dv.textContent=days>0?days+' 🔥':'0';
+    if(ds)ds.textContent=T('day_streak_s')||'consecutive days';
+  }catch(_){}
+
+  }catch(e){console.error("renderStats:",e);}
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// RESET STATISTICS
+// ═══════════════════════════════════════════════════════════════════
+function confirmReset(){
+  document.getElementById('confirm-bar').classList.remove('hidden');
+  document.getElementById('reset-btn').style.display='none';
+}
+function cancelReset(){
+  document.getElementById('confirm-bar').classList.add('hidden');
+  document.getElementById('reset-btn').style.display='';
+}
+function doReset(){
+  const fresh=freshST();
+  const adsRemoved=ST.adsRemoved; // preserve ads-removed status
+  Object.assign(ST,fresh,{adsRemoved,mode:ST.mode,cur:null,curPos:null,selSz:null});
+  try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
+  updQS();
+  cancelReset();
+  renderStats();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ADS
+// ═══════════════════════════════════════════════════════════════════
+// ── INTERSTITIAL ADS (every 20 hands) ──────────────────────────
+let interstitPending=false;
+function checkInterstitial(){
+  if(ST.adsRemoved)return;
+  if(ST.total>=20&&ST.total%20===0){
+    // Show interstitial after result is dismissed
+    interstitPending=true;
+  }
+}
+function showInterstitial(){
+  if(!interstitPending||ST.adsRemoved)return;
+  interstitPending=false;
+  const el=document.getElementById('interstit');
+  if(!el)return;
+  el.classList.remove('hidden');
+  // In real app: Android bridge loads actual AdMob interstitial here
+  if(window.Android&&window.Android.showInterstitial) window.Android.showInterstitial();
+  // Auto-close after 5s if user doesn't tap
+  setTimeout(()=>closeInterstit(),5000);
+}
+function closeInterstit(){
+  const el=document.getElementById('interstit');
+  if(el) el.classList.add('hidden');
+  interstitPending=false;
+  // Show hint button for next hand
+  showHintBtn();
+}
+// Called by Android bridge when ad is ready and closes
+function onInterstitialClosed(){closeInterstit();}
+
+function showAdsModal(){document.getElementById('ads-modal').classList.remove('hidden');}
+function closeAdsModal(){document.getElementById('ads-modal').classList.add('hidden');}
+function purchaseAds(){
+  ST.adsRemoved=true;
+  saveStats();
+  document.getElementById('ads-modal').classList.add('hidden');
+  document.getElementById('remove-ads-stat-btn')?.classList.add('gone');
+  closeInterstit();
+  // Android bridge
+  if(window.Android&&window.Android.purchaseRemoveAds) window.Android.purchaseRemoveAds();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════
+// ONBOARDING
+// ═══════════════════════════════════════════════════════════════════
+let obCurrent=0;const OB_STEPS=4;
+function obStart(){} // deprecated — onboarding now triggers from startGame
+function showTutorial(){
+  obCurrent=0;
+  document.getElementById('onboard').style.display='flex';
+  obUpdate();
+  // Don't clear ob_seen — user explicitly chose to replay
+}
+function obNext(){
+  obCurrent++;
+  if(obCurrent>=OB_STEPS){obSkip();return;}
+  obUpdate();
+}
+function obUpdate(){
+  try{
+  for(let i=0;i<OB_STEPS;i++){
+    document.getElementById('ob-'+i)?.classList.toggle('active',i===obCurrent);
+    document.getElementById('dot-'+i)?.classList.toggle('active',i===obCurrent);
+    // Fill translated text
+    const ti=document.getElementById('ob'+i+'-title');
+    const tx=document.getElementById('ob'+i+'-text');
+    if(ti)ti.textContent=T('ob'+i+'_title');
+    if(tx)tx.textContent=T('ob'+i+'_text');
+  }
+  const btn=document.getElementById('ob-next-btn');
+  if(btn)btn.textContent=obCurrent===OB_STEPS-1?T('ob_start'):T('ob_next');
+  const skip=document.getElementById('ob-skip-btn');
+  if(skip)skip.textContent=T('ob_skip');
+  }catch(e){console.error("obUpdate:",e);}
+}
+function obSkip(){
+  document.getElementById('onboard').style.display='none';
+  try{localStorage.setItem('ob_seen','1');localStorage.setItem('ob_seen_'+obCurrentLang,'1');}catch(e){}
+  doStartGame();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// HAPTIC FEEDBACK
+// ═══════════════════════════════════════════════════════════════════
+function haptic(type){
+  try{
+    if(!navigator.vibrate)return;
+    if(type==='correct') navigator.vibrate(40);
+    else if(type==='wrong') navigator.vibrate([60,30,60]);
+    else if(type==='partial') navigator.vibrate(20);
+    else navigator.vibrate(15);
+  }catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ANDROID BACK BUTTON SUPPORT
+// ═══════════════════════════════════════════════════════════════════
+// Android WebView calls this via evaluateJavascript('handleBack()')
+function handleBack(){
+  const stats=document.getElementById('stats-screen');
+  if(stats&&stats.classList.contains('open')){closeStats();return true;}
+  const result=document.getElementById('result-overlay');
+  if(result&&!result.classList.contains('hidden')){nextQ();return true;}
+  const game=document.getElementById('game');
+  if(game&&!game.classList.contains('hidden')){backToSplash();return true;}
+  return false; // let Android handle (exit)
+}
+
+
+
+// ═══════════════════════════════════════════════════════════════════
+// DAILY GOAL — 25 hands per day, resets at midnight
+// ═══════════════════════════════════════════════════════════════════
+const DAILY_GOAL = 25;
+
+function getTodayKey(){
+  const d=new Date();
+  return `pgtst_day_${d.getFullYear()}_${d.getMonth()}_${d.getDate()}`;
+}
+function getDailyCount(){
+  try{return parseInt(localStorage.getItem(getTodayKey())||'0',10);}catch(e){return 0;}
+}
+function incDailyCount(){
+  try{
+    const k=getTodayKey();
+    const n=getDailyCount()+1;
+    localStorage.setItem(k,n);
+    return n;
+  }catch(e){return 0;}
+}
+function updateDailyBar(){
+  try{
+  const n=getDailyCount();
+  const pct=Math.min(100,Math.round(n/DAILY_GOAL*100));
+  const fill=document.getElementById('daily-fill');
+  const count=document.getElementById('daily-count');
+  if(fill) fill.style.width=pct+'%';
+  if(count) count.textContent=n+'/'+DAILY_GOAL;
+  // Change colour when complete
+  if(fill){
+    fill.style.background=n>=DAILY_GOAL
+      ?'linear-gradient(90deg,#79e8a0,var(--gold-l))'
+      :'linear-gradient(90deg,var(--green),var(--gold-l))';
+  }
+  }catch(e){console.error("updateDailyBar:",e);}
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DAY STREAK — consecutive days played
+// ═══════════════════════════════════════════════════════════════════
+function updateDayStreak(){
+  try{
+    const today=getTodayKey();
+    const d=new Date();
+    const yesterday=new Date(d);yesterday.setDate(d.getDate()-1);
+    const yKey=`pgtst_day_${yesterday.getFullYear()}_${yesterday.getMonth()}_${yesterday.getDate()}`;
+    const streakKey='pgtst_day_streak';
+    const lastKey='pgtst_day_last';
+
+    const todayCount=getDailyCount();
+    const last=localStorage.getItem(lastKey);
+    let streak=parseInt(localStorage.getItem(streakKey)||'0',10);
+
+    if(todayCount>=DAILY_GOAL){
+      // Completed today
+      if(last===today){
+        // Already counted today — no change
+      } else if(last===yKey){
+        // Played yesterday → continue streak
+        streak++;
+      } else {
+        // Gap or first time
+        streak=1;
+      }
+      localStorage.setItem(streakKey,streak);
+      localStorage.setItem(lastKey,today);
+    }
+
+    const badge=document.getElementById('day-streak');
+    const num=document.getElementById('day-streak-num');
+    if(badge&&num){
+      if(streak>=2){
+        badge.classList.remove('hidden');
+        num.textContent=streak;
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+  }catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// STREAK TOAST — show on 5, 10, 15, 20, 25... in a row
+// ═══════════════════════════════════════════════════════════════════
+let toastTimer=null;
+function checkStreakToast(streak){
+  if(streak<5||streak%5!==0)return;
+  const emoji=streak>=20?'🏆':streak>=15?'⚡':streak>=10?'🔥':'✨';
+  const toast=document.getElementById('streak-toast');
+  const num=document.getElementById('st-num');
+  const lbl=document.getElementById('st-lbl');
+  const em=document.getElementById('st-emoji');
+  if(!toast)return;
+  if(em)em.textContent=emoji;
+  if(num)num.textContent=streak;
+  if(lbl)lbl.textContent=T('streak');
+  if(toastTimer)clearTimeout(toastTimer);
+  toast.classList.add('show');
+  toastTimer=setTimeout(()=>toast.classList.remove('show'),2200);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// BOARD RANDOMIZATION — shuffle suits while keeping ranks
+// Respects: hole card suits, monotone/rainbow texture tags
+// ═══════════════════════════════════════════════════════════════════
+const ALL_SUITS=['♠','♥','♦','♣'];
+function randomSuit(){return ALL_SUITS[0|Math.random()*4];}
+
+function randomizeBoard(sc){
+  try{
+  if(!sc.board)return sc.board;
+  const tex=sc.tex||[];
+  // Don't randomize when hero's hole suits matter for the scenario
+  // flush, flushdraw, straight-flush — hole card suits are integral to the scenario
+  if(tex.includes('flush')||tex.includes('flushdraw')){
+    return sc.board; // keep original suits
+  }
+  const mustMonotone=tex.includes('monotone');
+  const mustRainbow=tex.includes('rainbow');
+  const mustFlush=false; // handled above
+
+  // Get hero hole card suits (don't conflict with board cards of same rank)
+  const holeSuits=new Set((sc.hole||[]).map(h=>h.s));
+
+  let suits;
+  if(mustMonotone){
+    // All board cards same random suit
+    const s=randomSuit();
+    suits=sc.board.map(()=>s);
+  } else if(mustRainbow){
+    // All different suits — shuffle 4 suits, take first N
+    const shuffled=[...ALL_SUITS].sort(()=>Math.random()-.5);
+    suits=sc.board.map((_,i)=>shuffled[i%4]);
+  } else if(mustFlush){
+    // At least 2 cards share a suit — keep original suits structure, just randomize base suit
+    const baseSuit=randomSuit();
+    const otherSuits=ALL_SUITS.filter(s=>s!==baseSuit);
+    suits=sc.board.map((card,i)=>{
+      // Keep relative suit pattern from original
+      const origSuits=sc.board.map(c=>c.s);
+      const orig=origSuits[i];
+      const primary=origSuits[0];
+      return orig===primary?baseSuit:otherSuits[(origSuits.slice(0,i).filter(s=>s!==primary).length)%3];
+    });
+  } else {
+    // Free random — any suits
+    suits=sc.board.map(()=>randomSuit());
+  }
+
+  return sc.board.map((card,i)=>({...card,s:suits[i]}));
+  }catch(e){console.error("randomizeBoard:",e);return sc&&sc.board?sc.board:[];}
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// POSITION TOOLTIP — tap position badge to see explanation
+// ═══════════════════════════════════════════════════════════════════
+
+
+// ═══════════════════════════════════════════════════════════════════
+// DRILL MODE — replay mistakes
+// ═══════════════════════════════════════════════════════════════════
+let drillMode=false;
+let drillPool=[];
+let drillIdx=0;
+
+function startDrillMode(){
+  try{
+  // Build pool from top mistakes
+  const mistakes=Object.entries(ST.mistakes)
+    .sort((a,b)=>b[1].count-a[1].count)
+    .slice(0,10);
+  if(!mistakes.length)return;
+
+  // Find matching scenarios by id prefix
+  drillPool=[];
+  mistakes.forEach(([key])=>{
+    const id=key.split('_')[0];
+    const sc=STARTS.find(x=>x&&x.id===id)
+      ||PRE.find(x=>x&&x.id===id)
+      ||POSTFLOP.find(x=>x&&x.id===id);
+    if(sc&&!drillPool.find(x=>x&&x.id===id)) drillPool.push(sc);
+  });
+  if(!drillPool.length)return;
+
+  drillMode=true;
+  drillIdx=0;
+  closeStats();
+
+  // Show drill bar
+  const bar=document.getElementById('drill-bar');
+  const txt=document.getElementById('drill-bar-txt');
+  if(bar){bar.classList.remove('hidden');}
+  document.getElementById('mode-nav')?.classList.add('hidden');
+  updateDrillBar();
+  nextDrillQ();
+  }catch(e){console.error("startDrillMode:",e);}
+}
+
+function updateDrillBar(){
+  const txt=document.getElementById('drill-bar-txt');
+  if(txt)txt.textContent=(T('drill_mode')||'Drill Mode')+': '+drillIdx+'/'+drillPool.length;
+}
+
+function stopDrillMode(){
+  drillMode=false;drillPool=[];drillIdx=0;
+  const bar=document.getElementById('drill-bar');
+  if(bar)bar.classList.add('hidden');
+  document.getElementById('mode-nav')?.classList.remove('hidden');
+  nextQ();
+}
+
+function nextDrillQ(){
+  try{
+  if(!drillMode||!drillPool.length){stopDrillMode();return;}
+  if(drillIdx>=drillPool.length){
+    // Completed all — celebrate
+    drillIdx=0;
+    const toast=document.getElementById('streak-toast');
+    const em=document.getElementById('st-emoji');
+    const num=document.getElementById('st-num');
+    const lbl=document.getElementById('st-lbl');
+    if(em)em.textContent='💪';
+    if(num)num.textContent='✓';
+    if(lbl)lbl.textContent=T('drill_done')||'Drill complete!';
+    if(toast){toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2500);}
+    stopDrillMode();return;
+  }
+
+  document.getElementById('result-overlay').classList.add('hidden');
+  ST.selSz=null;
+  document.querySelectorAll('.sz-btn').forEach(b=>b.classList.remove('sel'));
+  updateDrillBar();
+
+  const sc=drillPool[drillIdx];
+  // Determine mode from scenario id
+  if(sc&&STARTS.find(x=>x&&x.id===sc.id)){
+    const posKeys=['UTG','HJ','CO','BTN','SB','BB'];
+    const pa=posKeys[0|Math.random()*posKeys.length];
+    const h=vary(sc);
+    ST.cur={...h,street:'preflop',heroPos:pa};ST.curPos={abbr:pa};
+    clearBoard();buildTable(pa);hlSeat(pa);
+    renderHole([{r:h.c1,s:h.s1},{r:h.c2,s:h.s2}]);
+    setSit([{cls:'hand',txt:h.name},{cls:'ip',txt:pa}],posDesc(pa),[]);
+    showSizing(T('sz_bb'),['2x','2.5x','3x','3.5x','4x']);
+    document.getElementById('q-text').textContent=pa+' — '+T('action');
+    mkActions(['fold','call','raise'],3);
+  } else if(sc&&PRE.find(x=>x&&x.id===sc.id)){
+    ST.cur={...sc,street:'preflop'};ST.curPos={abbr:sc.hp};
+    clearBoard();buildTable(sc.hp);hlSeat(sc.hp);
+    renderHole(sc.hole);setPot(sc.pot);
+    if(sc.vp&&sc.action&&sc.amount)showVBet(sc.vp,sc.amount);else clearVBet();
+    const desc=sc.action?`${sc.vp} ${sc.action} → ${sc.amount} · ${T('pot_lbl')}: ${sc.pot}`:'';
+    const fb=sc.action?[{cls:'facing',txt:`${T('facing')} ${sc.vp}: ${sc.action} ${sc.amount}`}]:[];
+    setSit([...fb,{cls:'ip',txt:sc.hp}],desc,[]);
+    if(sc.gto==='raise'&&(!sc.action||sc.action==='limp'))showSizing(T('sz_bb'),['2x','2.5x','3x','3.5x','4x']);
+    else document.getElementById('sz-box').classList.add('hidden');
+    document.getElementById('q-text').textContent=T('action');
+    mkActions(sc.acts||['fold','call','raise'],3);
+  } else {
+    // Postflop
+    const street=sc.street;
+    ST.cur=sc;ST.curPos={abbr:sc.hp};
+    clearBoard();
+    buildTable(sc.hp);hlSeat(sc.hp);
+    const bCount=street==='flop'?3:street==='turn'?4:5;
+    showBoard(randomizeBoard(sc).slice(0,bCount));
+    setPot(sc.pot||'');
+    if(sc.facing&&sc.facingS)showVBet(sc.vp,sc.facingS==='allin'?'ALL-IN':sc.facingS);else clearVBet();
+    renderHole(sc.hole);
+    const ipTxt=sc.ip?T('ip'):T('oop');
+    const badges=[{cls:sc.ip?'ip':'oop',txt:ipTxt},{cls:'hand',txt:sc.made}];
+    if(sc.facing)badges.push({cls:'facing',txt:`${T('facing')}: ${sc.facingS==='allin'?'ALL-IN':sc.facingS}`});
+    const desc=sc.facing?`${sc.vp} bets ${sc.facingS} · ${T('pot_lbl')}: ${sc.pot}`:`${T('pot_lbl')}: ${sc.pot}`;
+    setSit(badges,desc,sc.tex||[]);
+    if((sc.gto==='bet'||sc.gto==='raise')&&!sc.facing&&sc.szO&&sc.szO.length)showSizing(T('sz_pot'),sc.szO.map(x=>String(x)));
+    else document.getElementById('sz-box').classList.add('hidden');
+    let acts=sc.facing?['fold','call','raise','allin']:['fold','check','bet','allin'];
+    document.getElementById('q-text').textContent=sc.facing?`${sc.vp} bets ${sc.facingS} — ${T('action')}`:(sc.ip?T('ip'):T('oop'))+' — '+T('action');
+    mkActions(acts,4,sc.facing?null:['fold']);
+  }
+  updQS();
+  }catch(e){console.error("nextDrillQ:",e);stopDrillMode();}
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// HINT SYSTEM — watch ad to reveal correct action
+// ═══════════════════════════════════════════════════════════════════
+function showHintBtn(){
+  try{
+  const btn=document.getElementById('hint-btn');
+  const lbl=document.getElementById('hint-btn-lbl');
+  if(!btn)return;
+  if(lbl)lbl.textContent=ST.adsRemoved?T('hint_btn').replace(' (watch ad)','').replace(' (реклама)','').replace(' (ver anuncio)','').replace(' (ver anúncio)','').replace('（看广告）',''):T('hint_btn');
+  btn.classList.add('visible');
+  }catch(e){console.error("showHintBtn:",e);}
+}
+function hideHintBtn(){
+  document.getElementById('hint-btn')?.classList.remove('visible');
+}
+function useHint(){
+  hideHintBtn();
+  if(ST.adsRemoved){
+    revealHint();return;
+  }
+  // Show rewarded ad, then reveal
+  if(window.Android&&window.Android.showRewardedAd){
+    window.Android.showRewardedAd();
+    // Android calls onRewardedAdComplete() when done
+  } else {
+    // Browser fallback - just show (no real ad in HTML)
+    revealHint();
+  }
+}
+function revealHint(){
+  const sc=ST.cur;if(!sc)return;
+  const correctAction=sc.gto||'fold';
+
+  // 1. Highlight correct action button
+  // Match by data-action attribute (reliable) or by ALAB value
+  const ALAB_MAP={fold:'Fold',check:'Check',call:'Call',bet:'Bet',raise:'Raise',allin:'All-in'};
+  const correctLabel=(ALAB_MAP[correctAction]||correctAction).toLowerCase();
+
+  document.querySelectorAll('.act-btn').forEach(btn=>{
+    // Skip disabled buttons (e.g. dimmed Fold when no facing)
+    if(btn.disabled) return;
+    const label=btn.textContent.toLowerCase().trim();
+    const isCorrect=label===correctLabel;
+    if(isCorrect){
+      btn.style.outline='3px solid var(--gold)';
+      btn.style.outlineOffset='2px';
+      btn.style.opacity='1'; // make sure fully visible
+      btn.classList.add('hint-highlight');
+      setTimeout(()=>{btn.style.outline='';btn.style.outlineOffset='';btn.style.opacity='';},3000);
+    }
+  });
+
+  // 2. Highlight correct sizing — only for bet/raise actions
+  if(!['bet','raise','allin'].includes(correctAction)) return;
+  const szBox=document.getElementById('sz-box');
+  if(!szBox||szBox.classList.contains('hidden')) return;
+
+  const szBtns=document.querySelectorAll('.sz-btn');
+  if(!szBtns.length) return;
+
+  let targetBtn=null;
+
+  // Preflop open raise: use position-based GTO sizing
+  const isOpenRaise=(ST.mode==='starts')||
+    (ST.mode==='pre'&&sc.street==='preflop'&&(!sc.action||sc.action==='limp'));
+
+  if(isOpenRaise){
+    const SM={UTG:'3x',HJ:'2.5x',CO:'2.5x',BTN:'2.5x',SB:'3x',BB:'2.5x'};
+    const pa=ST.curPos?.abbr||sc.hp||sc.heroPos||'BTN';
+    const target=SM[pa]||'2.5x';
+    szBtns.forEach(btn=>{if(btn.dataset.sz===target) targetBtn=btn;});
+  } else if(sc.sz){
+    // Postflop: find exact match first, then closest
+    szBtns.forEach(btn=>{
+      if(parseFloat(btn.dataset.sz)===sc.sz) targetBtn=btn;
+    });
+    if(!targetBtn){
+      let minDiff=Infinity;
+      szBtns.forEach(btn=>{
+        const diff=Math.abs(parseFloat(btn.dataset.sz)||0 - sc.sz);
+        if(diff<minDiff){minDiff=diff;targetBtn=btn;}
+      });
+    }
+  }
+
+  if(targetBtn){
+    targetBtn.style.outline='3px solid var(--gold)';
+    targetBtn.style.outlineOffset='2px';
+    targetBtn.classList.add('hint-highlight');
+    // Auto-select the sizing button too
+    ST.selSz=targetBtn.dataset.sz;
+    szBtns.forEach(x=>x.classList.toggle('sel',x===targetBtn));
+    setTimeout(()=>{targetBtn.style.outline='';targetBtn.style.outlineOffset='';},3000);
+  }
+}
+// Called by Android after rewarded ad completes
+function onRewardedAdComplete(){revealHint();}
+
+
+// Translated action labels for mistake descriptions
+function getActionLabel(a){
+  const labels={
+    fold:{en:'Fold',ru:'Фолд',es:'Fold',pt:'Fold',zh:'弃牌'},
+    check:{en:'Check',ru:'Чек',es:'Check',pt:'Check',zh:'过牌'},
+    call:{en:'Call',ru:'Колл',es:'Call',pt:'Call',zh:'跟注'},
+    bet:{en:'Bet',ru:'Бет',es:'Bet',pt:'Bet',zh:'下注'},
+    raise:{en:'Raise',ru:'Рейз',es:'Raise',pt:'Raise',zh:'加注'},
+    allin:{en:'All-in',ru:'Олл-ин',es:'All-in',pt:'All-in',zh:'全押'},
+  };
+  return (labels[a]&&labels[a][CL])||ALAB[a]||a;
+}
+window.addEventListener('load',()=>{
+  loadStats();       // restore saved stats from localStorage
+  changeLang('en');  // default language
+  buildTable();      // pre-build table (needed before startGame)
+  updateDailyBar();   // show today's progress
+  updateDayStreak();  // show day streak if any
+  // Onboarding triggers from startGame button after language is chosen
+});
+</script>
+</script></body></html>
